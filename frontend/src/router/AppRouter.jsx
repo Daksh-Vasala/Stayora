@@ -1,6 +1,6 @@
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
-import Login from "../components/Login.jsx";
-import Signup from "../components/Signup.jsx";
+import Login from "../pages/Login.jsx";
+import Signup from "../pages/Signup.jsx";
 import UserNavbar from "../components/user/UserNavbar.jsx";
 import AdminSidebar from "../components/admin/AdminSidebar.jsx";
 import UseEffectDemo from "../components/tasks/UseEffectDemo.jsx";
