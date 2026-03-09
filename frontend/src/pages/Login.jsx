@@ -15,8 +15,13 @@ export default function Login() {
     formState: { errors },
   } = useForm();
 
-  const onSubmit = (data) => {
-    console.log(data);
+  const submitHandler = (data) => {
+    try {
+      console.log(data);
+    } catch (error) {
+      console.log(error);
+      
+    }
   };
 
   return (
@@ -29,7 +34,7 @@ export default function Login() {
 
           <h1 className="text-2xl font-bold mt-6">Welcome back</h1>
 
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 mt-6">
+          <form onSubmit={handleSubmit(submitHandler)} className="space-y-4 mt-6">
             <InputField
               label="Email"
               icon={Mail}

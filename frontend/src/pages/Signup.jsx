@@ -1,11 +1,13 @@
 import { Mail, Lock, User, Phone, Eye, EyeOff } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 
 import Logo from "../components/Logo";
 import InputField from "../components/InputField";
 import LeftPanel from "../components/LeftPanel";
 import { useState } from "react";
+import axios from "axios";
+import { toast } from "react-toastify";
 
 export default function Signup() {
   const [role, setRole] = useState("guest");
@@ -20,8 +22,19 @@ export default function Signup() {
 
   const password = watch("password");
 
-  const onSubmit = (data) => {
-    console.log(data);
+  const navigate = useNavigate();
+
+  const onSubmit = async (data) => {
+    try {
+      const { confirmPassword, ...userData } = data;
+      const res = await axios.post("/user/register", userData);
+      console.log(res.data);
+      toast.success(res.data.message);
+      navigate('/user');
+    } catch (error) {
+      console.log(error);
+      toast.error(error.response?.data?.message);
+    }
   };
 
   return (
