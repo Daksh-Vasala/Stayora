@@ -160,7 +160,7 @@ function UserNavbar({ userRole = "host" }) {
               }}
               className="flex items-center justify-center h-9 bg-slate-100 border border-slate-200 rounded-full px-2 hover:bg-slate-200 transition-colors"
             >
-              <div className="w-7 h-7 rounded-full bg-gradient-to-tr from-blue-500 to-indigo-600 flex items-center justify-center text-white text-xs font-bold shadow-sm">
+              <div className="w-7 h-7 rounded-full bg-linear-to-tr from-blue-500 to-indigo-600 flex items-center justify-center text-white text-xs font-bold shadow-sm">
                 JD
               </div>
               <ChevronDown className="text-slate-500 ml-1" size={14} />
@@ -202,7 +202,7 @@ function UserNavbar({ userRole = "host" }) {
         {/* Mobile Menu Drawer */}
         <div
           className={`md:hidden overflow-hidden transition-all duration-300 ease-in-out ${
-            mobileMenu ? "max-h-[500px] opacity-100" : "max-h-0 opacity-0"
+            mobileMenu ? "max-h-125 opacity-100" : "max-h-0 opacity-0"
           } bg-white border-b border-slate-200`}
         >
           <div className="flex flex-col p-2">
@@ -248,7 +248,7 @@ function UserNavbar({ userRole = "host" }) {
           {/* User Info Header */}
           <div className="px-5 py-4 bg-slate-50 border-b border-slate-100">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-blue-500 to-indigo-600 flex items-center justify-center text-white font-bold shadow-md">
+              <div className="w-10 h-10 rounded-full bg-linear-to-tr from-blue-500 to-indigo-600 flex items-center justify-center text-white font-bold shadow-md">
                 JD
               </div>
               <div>

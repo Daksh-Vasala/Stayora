@@ -99,7 +99,7 @@ const AdminSidebar = () => {
                     : 'text-slate-400 hover:bg-slate-800 hover:text-white'}
                 `}
               >
-                <item.icon className={`w-5 h-5 flex-shrink-0 ${activeTab === item.name ? 'text-white' : 'text-slate-500 group-hover:text-white'}`} />
+                <item.icon className={`w-5 h-5 shrink-0 ${activeTab === item.name ? 'text-white' : 'text-slate-500 group-hover:text-white'}`} />
                 {!isCollapsed && (
                   <span className="ml-3 whitespace-nowrap">{item.name}</span>
                 )}
@@ -115,7 +115,7 @@ const AdminSidebar = () => {
         <div className="p-4 border-t border-slate-700 bg-slate-900/50">
           <div className="flex items-center">
             <div className="relative">
-              <div className="h-10 w-10 rounded-full bg-gradient-to-tr from-blue-500 to-purple-500 flex items-center justify-center text-white font-bold shadow-lg">
+              <div className="h-10 w-10 rounded-full bg-linear-to-tr from-blue-500 to-purple-500 flex items-center justify-center text-white font-bold shadow-lg">
                 A
               </div>
               <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-slate-900 rounded-full"></div>
