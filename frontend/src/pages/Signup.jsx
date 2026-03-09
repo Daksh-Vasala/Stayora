@@ -30,7 +30,7 @@ export default function Signup() {
       const res = await axios.post("/user/register", userData);
       console.log(res.data);
       toast.success(res.data.message);
-      navigate('/user');
+      navigate("/user");
     } catch (error) {
       console.log(error);
       toast.error(error.response?.data?.message);
@@ -38,18 +38,20 @@ export default function Signup() {
   };
 
   return (
-    <div className="min-h-screen flex justify-center items-center bg-stone-50 p-4">
+    <div className="min-h-screen flex justify-center items-center bg-slate-50 p-4">
       <div className="grid lg:grid-cols-2 bg-white rounded-3xl shadow-xl max-w-4xl w-full overflow-hidden">
         <LeftPanel />
 
         <div className="p-10">
           <Logo />
 
-          <h1 className="text-2xl font-bold mt-6">Create account</h1>
+          <h1 className="text-2xl font-bold mt-6 text-slate-900">
+            Create account
+          </h1>
 
           {/* Role selector */}
           <div className="mb-5">
-            <p className="text-sm font-semibold text-stone-700 mb-2">
+            <p className="text-sm font-semibold text-slate-700 mb-2">
               I want to join as
             </p>
             <div className="grid grid-cols-2 gap-2">
@@ -61,18 +63,20 @@ export default function Signup() {
                   key={id}
                   onClick={() => setRole(id)}
                   className={`flex flex-col items-start px-4 py-3 rounded-xl border-2 text-left transition-all cursor-pointer
-                ${
-                  role === id
-                    ? "border-orange-500 bg-orange-50"
-                    : "border-stone-200 bg-white hover:border-stone-300"
-                }`}
+                    ${
+                      role === id
+                        ? "border-blue-600 bg-blue-50"
+                        : "border-slate-200 bg-white hover:border-slate-300"
+                    }`}
                 >
                   <span
-                    className={`text-sm font-bold ${role === id ? "text-orange-500" : "text-stone-800"}`}
+                    className={`text-sm font-bold ${
+                      role === id ? "text-blue-600" : "text-slate-800"
+                    }`}
                   >
                     {label}
                   </span>
-                  <span className="text-xs text-stone-500 mt-0.5">{sub}</span>
+                  <span className="text-xs text-slate-500 mt-0.5">{sub}</span>
                 </button>
               ))}
             </div>
@@ -136,9 +140,9 @@ export default function Signup() {
                   onClick={() => setShowPassword(!showPassword)}
                 >
                   {showPassword ? (
-                    <EyeOff size={16} className="text-stone-400" />
+                    <EyeOff size={16} className="text-slate-400" />
                   ) : (
-                    <Eye size={16} className="text-stone-400" />
+                    <Eye size={16} className="text-slate-400" />
                   )}
                 </button>
               }
@@ -160,9 +164,9 @@ export default function Signup() {
                   onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                 >
                   {showConfirmPassword ? (
-                    <EyeOff size={16} className="text-stone-400" />
+                    <EyeOff size={16} className="text-slate-400" />
                   ) : (
-                    <Eye size={16} className="text-stone-400" />
+                    <Eye size={16} className="text-slate-400" />
                   )}
                 </button>
               }
@@ -171,7 +175,7 @@ export default function Signup() {
             <div className="text-right">
               <Link
                 to="/forgot-password"
-                className="text-xs text-orange-500 hover:underline"
+                className="text-xs text-blue-600 hover:underline"
               >
                 Forgot password?
               </Link>
@@ -179,7 +183,7 @@ export default function Signup() {
 
             <button
               type="submit"
-              className="w-full mt-4 bg-orange-500 text-white py-3 rounded-xl"
+              className="w-full mt-4 bg-blue-600 text-white py-3 rounded-xl hover:bg-blue-700 transition-colors shadow-sm"
             >
               Sign up
             </button>
@@ -187,13 +191,13 @@ export default function Signup() {
 
           {/* OR Divider */}
           <div className="flex items-center gap-4 my-6">
-            <div className="flex-1 h-px bg-stone-200"></div>
-            <span className="text-sm text-stone-400">or</span>
-            <div className="flex-1 h-px bg-stone-200"></div>
+            <div className="flex-1 h-px bg-slate-200"></div>
+            <span className="text-sm text-slate-400">or</span>
+            <div className="flex-1 h-px bg-slate-200"></div>
           </div>
 
           {/* Google Sign In */}
-          <button className="w-full mt-6 border text-sm  border-stone-300 py-3 rounded-xl flex items-center justify-center gap-4 hover:bg-stone-50">
+          <button className="w-full mt-6 border text-sm border-slate-300 py-3 rounded-xl flex items-center justify-center gap-4 hover:bg-slate-50 transition-colors">
             <img
               src="https://www.svgrepo.com/show/475656/google-color.svg"
               className="w-5 h-5"
@@ -201,9 +205,9 @@ export default function Signup() {
             Sign in with Google
           </button>
 
-          <p className="text-sm mt-6 text-center">
+          <p className="text-sm mt-6 text-center text-slate-600">
             Already have an account?{" "}
-            <Link to="/" className="text-orange-500 font-semibold">
+            <Link to="/" className="text-blue-600 font-semibold hover:underline">
               Login
             </Link>
           </p>

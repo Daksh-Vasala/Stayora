@@ -20,19 +20,20 @@ export default function Login() {
       console.log(data);
     } catch (error) {
       console.log(error);
-      
     }
   };
 
   return (
-    <div className="min-h-screen flex justify-center items-center bg-stone-50 p-4">
+    <div className="min-h-screen flex justify-center items-center bg-slate-50 p-4">
       <div className="grid lg:grid-cols-2 bg-white rounded-3xl shadow-xl max-w-4xl w-full overflow-hidden">
         <LeftPanel />
 
         <div className="p-10">
           <Logo />
 
-          <h1 className="text-2xl font-bold mt-6">Welcome back</h1>
+          <h1 className="text-2xl font-bold mt-6 text-slate-900">
+            Welcome back
+          </h1>
 
           <form onSubmit={handleSubmit(submitHandler)} className="space-y-4 mt-6">
             <InputField
@@ -64,9 +65,9 @@ export default function Login() {
                   onClick={() => setShowPassword(!showPassword)}
                 >
                   {showPassword ? (
-                    <EyeOff size={16} className="text-stone-400" />
+                    <EyeOff size={16} className="text-slate-400" />
                   ) : (
-                    <Eye size={16} className="text-stone-400" />
+                    <Eye size={16} className="text-slate-400" />
                   )}
                 </button>
               }
@@ -75,7 +76,7 @@ export default function Login() {
             <div className="text-right">
               <Link
                 to="/forgot-password"
-                className="text-xs text-orange-500 hover:underline"
+                className="text-xs text-blue-600 hover:underline"
               >
                 Forgot password?
               </Link>
@@ -83,7 +84,7 @@ export default function Login() {
 
             <button
               type="submit"
-              className="w-full mt-2 bg-orange-500 text-white py-3 rounded-xl"
+              className="w-full mt-2 bg-blue-600 text-white py-3 rounded-xl hover:bg-blue-700 transition-colors shadow-sm"
             >
               Sign in
             </button>
@@ -91,13 +92,13 @@ export default function Login() {
 
           {/* OR Divider */}
           <div className="flex items-center gap-4 my-6">
-            <div className="flex-1 h-px bg-stone-200"></div>
-            <span className="text-sm text-stone-400">or</span>
-            <div className="flex-1 h-px bg-stone-200"></div>
+            <div className="flex-1 h-px bg-slate-200"></div>
+            <span className="text-sm text-slate-400">or</span>
+            <div className="flex-1 h-px bg-slate-200"></div>
           </div>
 
           {/* Google Sign In */}
-          <button className="w-full mt-6 border text-sm  border-stone-300 py-3 rounded-xl flex items-center justify-center gap-4 hover:bg-stone-50">
+          <button className="w-full mt-6 border text-sm border-slate-300 py-3 rounded-xl flex items-center justify-center gap-4 hover:bg-slate-50 transition-colors">
             <img
               src="https://www.svgrepo.com/show/475656/google-color.svg"
               className="w-5 h-5"
@@ -105,9 +106,9 @@ export default function Login() {
             Sign in with Google
           </button>
 
-          <p className="text-sm mt-6 text-center">
+          <p className="text-sm mt-6 text-center text-slate-600">
             Don't have an account?{" "}
-            <Link to="/signup" className="text-orange-500 font-semibold">
+            <Link to="/signup" className="text-blue-600 font-semibold hover:underline">
               Sign up
             </Link>
           </p>

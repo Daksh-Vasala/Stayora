@@ -5,6 +5,7 @@ const register = async (req, res) => {
   try {
     const userData = req.body;
 
+    //checks f 
     const existingUser = await User.findOne({ email: userData.email });
 
     if (existingUser) {
