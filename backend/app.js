@@ -8,11 +8,14 @@ app.use(cors());
 require("dotenv").config();
 const PORT = process.env.PORT;
 
-const DBConnection = require("./src/utils/DBConnection.js");
-DBConnection();
+const db = require("./src/utils/db.js");
+db();
 
 const userRouter = require("./src/routers/userRouter.js")
 app.use("/user", userRouter);
+
+const propertyRouter = require("./src/routers/propertyRouter.js")
+app.use("/property", propertyRouter);
 
 app.listen(PORT, () => {
   console.log(`Server started at port ${PORT}`);

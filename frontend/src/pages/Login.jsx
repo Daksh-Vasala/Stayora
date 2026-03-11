@@ -1,25 +1,32 @@
 import { useState } from "react";
 import { Mail, Lock, Eye, EyeOff } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
+import axios from "axios";
 
 import Logo from "../components/Logo";
 import InputField from "../components/InputField";
 import LeftPanel from "../components/LeftPanel";
+import { toast } from "react-toastify";
 
 export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
+  const navigate = useNavigate();
   const {
     register,
     handleSubmit,
     formState: { errors },
   } = useForm();
 
-  const submitHandler = (data) => {
+  const submitHandler = async (data) => {
     try {
-      console.log(data);
+      const res = await axios.post("/user/login", data);
+      console.log(res.data);
+      toast.success(res.data?.message);
+      navigate("/user");
     } catch (error) {
       console.log(error);
+      toast.error(error.response?.data?.message);
     }
   };
 
@@ -35,7 +42,10 @@ export default function Login() {
             Welcome back
           </h1>
 
-          <form onSubmit={handleSubmit(submitHandler)} className="space-y-4 mt-6">
+          <form
+            onSubmit={handleSubmit(submitHandler)}
+            className="space-y-4 mt-6"
+          >
             <InputField
               label="Email"
               icon={Mail}
@@ -108,7 +118,10 @@ export default function Login() {
 
           <p className="text-sm mt-6 text-center text-slate-600">
             Don't have an account?{" "}
-            <Link to="/signup" className="text-blue-600 font-semibold hover:underline">
+            <Link
+              to="/signup"
+              className="text-blue-600 font-semibold hover:underline"
+            >
               Sign up
             </Link>
           </p>

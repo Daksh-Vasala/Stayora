@@ -11,13 +11,15 @@ const userSchema = new Schema(
       type: String,
       unique: true,
     },
-    password_hash: String,
+    password: String,
     role: {
       type: String,
       enum: ["admin", "host", "guest"],
       default: "guest",
     },
     phone: String,
+
+    profilePic: String,
 
     is_verified: {
       type: Boolean,

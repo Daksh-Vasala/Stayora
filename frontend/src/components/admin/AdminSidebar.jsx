@@ -161,7 +161,7 @@ const AdminSidebar = () => {
               <input 
                 type="text" 
                 placeholder="Search users, listings..." 
-                className="bg-transparent border-none focus:ring-0 text-sm ml-2 w-full text-gray-700 placeholder-gray-400"
+                className="bg-transparent border-none outline-none focus:ring-0 text-sm ml-2 w-full text-gray-700 placeholder-gray-400"
               />
             </div>
             

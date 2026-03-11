@@ -27,6 +27,9 @@ export default function Signup() {
   const onSubmit = async (data) => {
     try {
       const { confirmPassword, ...userData } = data;
+      if(role === "host") {
+        userData.role = "host";
+      }
       const res = await axios.post("/user/register", userData);
       console.log(res.data);
       toast.success(res.data.message);
@@ -207,7 +210,10 @@ export default function Signup() {
 
           <p className="text-sm mt-6 text-center text-slate-600">
             Already have an account?{" "}
-            <Link to="/" className="text-blue-600 font-semibold hover:underline">
+            <Link
+              to="/"
+              className="text-blue-600 font-semibold hover:underline"
+            >
               Login
             </Link>
           </p>
