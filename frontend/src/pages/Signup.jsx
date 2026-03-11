@@ -13,6 +13,7 @@ export default function Signup() {
   const [role, setRole] = useState("guest");
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
   const {
     register,
     handleSubmit,
@@ -26,8 +27,9 @@ export default function Signup() {
 
   const onSubmit = async (data) => {
     try {
+      setLoading(true);
       const { confirmPassword, ...userData } = data;
-      if(role === "host") {
+      if (role === "host") {
         userData.role = "host";
       }
       const res = await axios.post("/user/register", userData);
@@ -37,6 +39,8 @@ export default function Signup() {
     } catch (error) {
       console.log(error);
       toast.error(error.response?.data?.message);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -186,9 +190,10 @@ export default function Signup() {
 
             <button
               type="submit"
-              className="w-full mt-4 bg-blue-600 text-white py-3 rounded-xl hover:bg-blue-700 transition-colors shadow-sm"
+              className={`w-full mt-4 bg-blue-600 text-white py-3 rounded-xl hover:bg-blue-700 transition-colors shadow-sm ${loading && "opacity-70"}`}
+              disabled={loading}
             >
-              Sign up
+              {loading ? "Please wait..." : "Sign up"}
             </button>
           </form>
 

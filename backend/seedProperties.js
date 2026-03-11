@@ -16,6 +16,8 @@ const listings = [
     beds: 3,
     amenities: ["wifi", "pool", "kitchen", "parking", "air conditioning"],
     images: ["https://images.unsplash.com/photo-1560448204-e02f11c3d0e2"],
+    rating: 4.8,
+    reviewCount: 64,
   },
 
   {
@@ -34,6 +36,8 @@ const listings = [
     beds: 2,
     amenities: ["wifi", "kitchen", "washing machine", "air conditioning"],
     images: ["https://images.unsplash.com/photo-1502672260266-1c1ef2d93688"],
+    rating: 4.5,
+    reviewCount: 41,
   },
 
   {
@@ -52,6 +56,8 @@ const listings = [
     beds: 2,
     amenities: ["wifi", "fireplace", "kitchen", "heating"],
     images: ["https://images.unsplash.com/photo-1505691723518-36a5ac3be353"],
+    rating: 4.7,
+    reviewCount: 52,
   },
 
   {
@@ -70,6 +76,8 @@ const listings = [
     beds: 4,
     amenities: ["wifi", "pool", "gym", "parking", "kitchen"],
     images: ["https://images.unsplash.com/photo-1493809842364-78817add7ffb"],
+    rating: 4.9,
+    reviewCount: 73,
   },
 
   {
@@ -88,6 +96,8 @@ const listings = [
     beds: 2,
     amenities: ["wifi", "kitchen", "balcony", "parking"],
     images: ["https://images.unsplash.com/photo-1505692794403-35c66cbe24c6"],
+    rating: 4.4,
+    reviewCount: 29,
   },
 
   {
@@ -106,6 +116,8 @@ const listings = [
     beds: 1,
     amenities: ["breakfast", "parking", "air conditioning"],
     images: ["https://images.unsplash.com/photo-1501183638710-841dd1904471"],
+    rating: 4.6,
+    reviewCount: 38,
   },
 
   {
@@ -124,6 +136,8 @@ const listings = [
     beds: 3,
     amenities: ["wifi", "pool", "breakfast", "parking"],
     images: ["https://images.unsplash.com/photo-1522708323590-d24dbb6b0267"],
+    rating: 4.8,
+    reviewCount: 55,
   },
 
   {
@@ -142,6 +156,8 @@ const listings = [
     beds: 1,
     amenities: ["wifi", "kitchen", "air conditioning"],
     images: ["https://images.unsplash.com/photo-1502672023488-70e25813eb80"],
+    rating: 4.2,
+    reviewCount: 21,
   },
 
   {
@@ -160,6 +176,8 @@ const listings = [
     beds: 5,
     amenities: ["wifi", "pool", "parking", "garden", "kitchen"],
     images: ["https://images.unsplash.com/photo-1502005229762-cf1b2da7c5d6"],
+    rating: 4.7,
+    reviewCount: 47,
   },
 
   {
@@ -178,5 +196,7 @@ const listings = [
     beds: 3,
     amenities: ["wifi", "pool", "balcony", "air conditioning"],
     images: ["https://images.unsplash.com/photo-1512918728675-ed5a9ecdebfd"],
+    rating: 4.9,
+    reviewCount: 69,
   },
 ];

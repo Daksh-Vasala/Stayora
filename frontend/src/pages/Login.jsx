@@ -10,6 +10,7 @@ import LeftPanel from "../components/LeftPanel";
 import { toast } from "react-toastify";
 
 export default function Login() {
+  const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
   const {
@@ -20,6 +21,7 @@ export default function Login() {
 
   const submitHandler = async (data) => {
     try {
+      setLoading(true);
       const res = await axios.post("/user/login", data);
       console.log(res.data);
       toast.success(res.data?.message);
@@ -27,6 +29,8 @@ export default function Login() {
     } catch (error) {
       console.log(error);
       toast.error(error.response?.data?.message);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -94,9 +98,10 @@ export default function Login() {
 
             <button
               type="submit"
-              className="w-full mt-2 bg-blue-600 text-white py-3 rounded-xl hover:bg-blue-700 transition-colors shadow-sm"
+              className={`w-full mt-2 bg-blue-600 text-white py-3 rounded-xl hover:bg-blue-700 transition-colors shadow-sm ${loading && "opacity-50"}`}
+              disabled={loading}
             >
-              Sign in
+              {loading ? "Please wait..." : "Sign in"}
             </button>
           </form>
 

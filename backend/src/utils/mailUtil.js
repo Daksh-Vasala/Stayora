@@ -10,7 +10,7 @@ const transporter = mailer.createTransport({
   },
 });
 
-const sendMail = async (to, subject, htmlFile, replacements = {}) => {
+const sendTemplateMail = async (to, subject, htmlFile, replacements = {}) => {
   const htmlPath = path.join(__dirname, "../templates", htmlFile);
   let htmlContent = fs.readFileSync(htmlPath, "utf-8");
 
@@ -30,4 +30,4 @@ const sendMail = async (to, subject, htmlFile, replacements = {}) => {
   return mailResponse;
 };
 
-module.exports = sendMail;
+module.exports = sendTemplateMail;

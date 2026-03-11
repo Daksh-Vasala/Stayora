@@ -1,12 +1,12 @@
 const User = require("../models/userModel.js");
 const bcrypt = require("bcrypt");
-const sendMail = require("../utils/mailUtil.js");
+const sendTemplateMail = require("../utils/mailUtil.js");
 
 const register = async (req, res) => {
   try {
     const userData = req.body;
 
-    //checks f
+    //checks if the email is already registered
     const existingUser = await User.findOne({ email: userData.email });
 
     if (existingUser) {
@@ -25,13 +25,13 @@ const register = async (req, res) => {
 
     // hide password in response
     createdUser.password = undefined;
-    await sendMail(
+    await sendTemplateMail(
       userData.email,
       "Welcome to our app",
       "Welcome.html",
       {
-        name: userData.name
-      }
+        name: userData.name,
+      },
     );
 
     res.status(201).json({
