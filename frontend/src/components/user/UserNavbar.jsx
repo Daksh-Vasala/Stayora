@@ -1,7 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { NavLink } from "react-router-dom";
 import {
-  Search,
   Bell,
   Heart,
   BookOpen,
@@ -17,13 +16,11 @@ import {
   LayoutDashboard,
   Calendar,
   DollarSign,
-  ShieldCheck,
   ChevronUp,
 } from "lucide-react";
 
-function UserNavbar({ userRole = "host" }) {
+function UserNavbar({ userRole = "guest" }) {
   const [mobileMenu, setMobileMenu] = useState(false);
-  const [mobileSearch, setMobileSearch] = useState(false);
   const [accountMenu, setAccountMenu] = useState(false);
 
   const containerRef = useRef(null);
@@ -94,7 +91,6 @@ function UserNavbar({ userRole = "host" }) {
     function handleClickOutside(e) {
       if (containerRef.current && !containerRef.current.contains(e.target)) {
         setMobileMenu(false);
-        setMobileSearch(false);
         setAccountMenu(false);
       }
     }
@@ -126,16 +122,6 @@ function UserNavbar({ userRole = "host" }) {
             </span>
           </NavLink>
 
-          {/* Desktop Search */}
-          {/* <div className="hidden md:flex items-center gap-2 bg-slate-100 border border-slate-200 rounded-full px-4 py-2 w-96 shrink-0 focus-within:border-blue-500 focus-within:ring-2 focus-within:ring-blue-100 transition-all">
-            <Search size={16} className="text-slate-400 shrink-0" />
-            <input
-              className="bg-transparent outline-none text-sm text-slate-800 w-full placeholder-slate-400"
-              placeholder="Search destination, property type..."
-              aria-label="Search destination"
-            />
-          </div> */}
-
           {/* Desktop Nav */}
           <div className="hidden md:flex items-center gap-2 ml-auto">
             {displayLinks.map(({ label, icon: Icon, path }) => (
@@ -158,17 +144,6 @@ function UserNavbar({ userRole = "host" }) {
 
           {/* Right side */}
           <div className="flex items-center gap-2 ml-auto md:ml-0">
-            {/* Mobile Search Toggle */}
-            {/* <button
-              aria-label="Open search"
-              onClick={() => {
-                setMobileSearch(!mobileSearch);
-                setMobileMenu(false);
-              }}
-              className="md:hidden w-9 h-9 flex items-center justify-center rounded-full border border-slate-200 hover:bg-slate-50 transition-colors"
-            >
-              <Search className="text-slate-600" size={18} />
-            </button> */}
 
             {/* Notifications */}
             <button
@@ -192,7 +167,6 @@ function UserNavbar({ userRole = "host" }) {
               onClick={() => {
                 setAccountMenu(!accountMenu);
                 setMobileMenu(false);
-                setMobileSearch(false);
               }}
               className="flex items-center justify-center h-9 bg-slate-100 border border-slate-200 rounded-full px-2 hover:bg-slate-200 transition-colors"
             >
@@ -211,7 +185,6 @@ function UserNavbar({ userRole = "host" }) {
               aria-label="Open menu"
               onClick={() => {
                 setMobileMenu(!mobileMenu);
-                setMobileSearch(false);
                 setAccountMenu(false);
               }}
               className="md:hidden w-9 h-9 flex items-center justify-center rounded-full border border-slate-200 hover:bg-slate-50 transition-colors"
@@ -224,24 +197,6 @@ function UserNavbar({ userRole = "host" }) {
             </button>
           </div>
         </nav>
-
-        {/* Mobile Search Bar */}
-        {/* <div
-          className={`md:hidden overflow-hidden transition-all duration-300 ease-in-out ${
-            mobileSearch ? "max-h-24 opacity-100" : "max-h-0 opacity-0"
-          } bg-white border-b border-slate-200`}
-        >
-          <div className="px-4 py-3">
-            <div className="flex items-center gap-2 bg-slate-100 rounded-full px-4 py-2.5 border border-slate-200">
-              <Search size={16} className="text-slate-400" />
-              <input
-                autoFocus
-                className="bg-transparent outline-none text-sm w-full placeholder-slate-400"
-                placeholder="Search destination..."
-              />
-            </div>
-          </div>
-        </div> */}
 
         {/* Mobile Menu Drawer */}
         <div

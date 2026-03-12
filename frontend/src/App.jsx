@@ -2,8 +2,10 @@ import { ToastContainer } from "react-toastify";
 import AppRouter from "./router/AppRouter";
 import axios from "axios";
 
+axios.defaults.baseURL = "http://localhost:3000"
+axios.defaults.withCredentials = true
+
 function App() {
-  axios.defaults.baseURL = "http://localhost:3000"
   return (
     <>
       <ToastContainer
