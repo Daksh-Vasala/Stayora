@@ -2,9 +2,9 @@ import { Mail, Lock, User, Phone, Eye, EyeOff } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 
-import Logo from "../components/Logo";
-import InputField from "../components/InputField";
-import LeftPanel from "../components/LeftPanel";
+import Logo from "../components/layout/Logo";
+import InputField from "../components/ui/InputField";
+import LeftPanel from "../components/layout/LeftPanel";
 import { useState } from "react";
 import axios from "axios";
 import { toast } from "react-toastify";

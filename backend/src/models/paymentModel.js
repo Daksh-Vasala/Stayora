@@ -5,6 +5,7 @@ const paymentSchema = new Schema(
   {
     booking: {
       type: Schema.Types.ObjectId,
+      required: true,
       ref: "Booking",
     },
 
@@ -18,7 +19,10 @@ const paymentSchema = new Schema(
       ref: "User",
     },
 
-    amount: Number,
+    amount: {
+      type: Number,
+      required: true
+    },
 
     paymentStatus: {
       type: String,

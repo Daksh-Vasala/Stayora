@@ -1,23 +1,32 @@
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
-import Login from "../pages/Login.jsx";
-import Signup from "../pages/Signup.jsx";
-import UserNavbar from "../components/user/UserNavbar.jsx";
-import AdminSidebar from "../components/admin/AdminSidebar.jsx";
-import HomePage from "../pages/HomePage.jsx";
+
+import Login from "../pages/Login";
+import Signup from "../pages/Signup";
+import Home from "../pages/Home";
+import PropertyDetail from "../pages/PropertyDetail";
+
+import AdminSidebar from "../components/layout/AdminSidebar";
+import MainLayout from "../components/layout/MainLayout";
 
 const router = createBrowserRouter([
-  { path:"/", element: <Login /> },
-  { path:"/signup", element: <Signup /> },
+  // PUBLIC ROUTES
+  { path: "/login", element: <Login /> },
 
-  {path: "/user", element:<HomePage />, 
-    children: [
-    ]
+  { path: "/signup", element: <Signup /> },
+
+  // USER ROUTES WITH NAVBAR
+  { path: "/", element: <MainLayout />, children: [
+      { path: "/", element: <Home /> },
+      { path: "/property/:id", element: <PropertyDetail /> },
+    ],
   },
-  {path: "/admin", element:<AdminSidebar />},
-])
+
+  // ADMIN ROUTE
+  { path: "/admin", element: <AdminSidebar /> },
+]);
 
 const AppRouter = () => {
-  return <RouterProvider router={router} />
-}
+  return <RouterProvider router={router} />;
+};
 
 export default AppRouter;

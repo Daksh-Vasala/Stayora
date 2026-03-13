@@ -10,14 +10,22 @@ const userSchema = new Schema(
     email: {
       type: String,
       unique: true,
+      required: true
     },
-    password: String,
+
+    password: {
+      type: String,
+      rquired: true
+    },
     role: {
       type: String,
       enum: ["admin", "host", "guest"],
       default: "guest",
     },
-    phone: String,
+    phone: {
+      type: String,
+      unique: true
+    },
 
     profilePic: String,
 

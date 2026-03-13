@@ -17,6 +17,7 @@ const authMiddleware = async (req, res, next) => {
     //checks the authentication
     if (!decoded) {
       return res.status(401).json({
+        success: false,
         message: "You are not authorized",
       });
     }

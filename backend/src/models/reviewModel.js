@@ -6,6 +6,7 @@ const reviewSchema = new Schema(
     property: {
       type: Schema.Types.ObjectId,
       ref: "Property",
+      required: true
     },
 
     guest: {
@@ -17,6 +18,7 @@ const reviewSchema = new Schema(
       type: Number,
       min: 1,
       max: 5,
+      required: true
     },
 
     comment: String,

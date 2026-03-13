@@ -6,25 +6,46 @@ const bookingSchema = new Schema(
     property: {
       type: Schema.Types.ObjectId,
       ref: "Property",
+      required: true,
     },
 
     guest: {
       type: Schema.Types.ObjectId,
       ref: "User",
+      required: true,
     },
 
     host: {
       type: Schema.Types.ObjectId,
       ref: "User",
+      required: true,
     },
 
-    checkIn: Date,
+    checkIn: {
+      type: Date,
+      required: true,
+    },
 
-    checkOut: Date,
+    checkOut: {
+      type: Date,
+      required: true,
+      validate: {
+        validator: function (value) {
+          return value > this.checkIn;
+        },
+        message: "Check-out date must be after check-in date",
+      },
+    },
 
-    guestsCount: Number,
+    guestsCount: {
+      type: Number,
+      required: true,
+    },
 
-    totalPrice: Number,
+    totalPrice: {
+      type: Number,
+      required: true,
+    },
 
     status: {
       type: String,

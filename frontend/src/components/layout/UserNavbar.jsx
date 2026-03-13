@@ -27,7 +27,7 @@ function UserNavbar({ userRole = "guest" }) {
 
   // Guest-specific links
   const guestLinks = [
-    { id: "explore", label: "Explore", icon: Compass, path: "/user" },
+    { id: "explore", label: "Explore", icon: Compass, path: "/" },
     { id: "wishlist", label: "Wishlist", icon: Heart, path: "/wishlist" },
     { id: "bookings", label: "My Bookings", icon: BookOpen, path: "/bookings" },
     {
@@ -144,7 +144,6 @@ function UserNavbar({ userRole = "guest" }) {
 
           {/* Right side */}
           <div className="flex items-center gap-2 ml-auto md:ml-0">
-
             {/* Notifications */}
             <button
               aria-label="Notifications"

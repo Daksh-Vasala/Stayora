@@ -1,5 +1,6 @@
 const { getAllProperties, createProperty, getPropertyById, updateProperty, deleteProperty } = require("../controllers/propertyController");
 const authMiddleware = require("../middlewares/authMiddleware");
+const hostMiddleware = require("../middlewares/hostMiddleware");
 
 const router = require("express").Router();
 
@@ -12,6 +13,5 @@ router.get("/:id", getPropertyById);
 router.put("/:id", updateProperty);
 
 router.delete("/:id", deleteProperty);
-
 
 module.exports = router

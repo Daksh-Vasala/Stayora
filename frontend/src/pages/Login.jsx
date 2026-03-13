@@ -4,9 +4,9 @@ import { Link, useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import axios from "axios";
 
-import Logo from "../components/Logo";
-import InputField from "../components/InputField";
-import LeftPanel from "../components/LeftPanel";
+import Logo from "../components/layout/Logo";
+import InputField from "../components/ui/InputField";
+import LeftPanel from "../components/layout/LeftPanel";
 import { toast } from "react-toastify";
 
 export default function Login() {
