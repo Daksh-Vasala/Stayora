@@ -25,6 +25,15 @@ app.use("/user", userRouter);
 const propertyRouter = require("./src/routers/propertyRouter.js");
 app.use("/property", propertyRouter);
 
+const bookingRouter = require("./src/routers/bookingRouter.js");
+app.use("/api/bookings", bookingRouter);
+const reviewRouter = require("./src/routers/reviewRouter.js");
+app.use("/api/reviews", reviewRouter);
+const messageRouter = require("./src/routers/messageRouter.js");
+app.use("/api/messages", messageRouter);
+const paymentRouter = require("./src/routers/paymentRouter.js");
+app.use("/api/payments", paymentRouter);
+
 app.listen(PORT, () => {
   console.log(`Server started at port ${PORT}`);
 });
