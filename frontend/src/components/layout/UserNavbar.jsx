@@ -33,9 +33,9 @@ function UserNavbar({ userRole, onLogout }) {
   ];
 
   const hostLinks = [
-    { label: "Dashboard", icon: LayoutDashboard, path: "/host/dashboard" },
+    { label: "Dashboard", icon: LayoutDashboard, path: "/host" },
     { label: "Listings", icon: Home, path: "/host/listings" },
-    { label: "Calendar", icon: Calendar, path: "/host/calendar" },
+    { label: "Bookings", icon: Calendar, path: "/host/bookings" },
     { label: "Earnings", icon: DollarSign, path: "/host/earnings" },
     { label: "Messages", icon: MessageCircle, path: "/messages" },
   ];
@@ -73,6 +73,7 @@ function UserNavbar({ userRole, onLogout }) {
             <NavLink
               key={path}
               to={path}
+              end={path === "/host"} // ⭐ important fix
               className={({ isActive }) =>
                 `flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition ${
                   isActive

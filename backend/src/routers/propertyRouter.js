@@ -1,10 +1,11 @@
 const { getAllProperties, createProperty, getPropertyById, updateProperty, deleteProperty } = require("../controllers/propertyController");
 const authMiddleware = require("../middlewares/authMiddleware");
 const hostMiddleware = require("../middlewares/hostMiddleware");
+const upload = require("../middlewares/uploadMiddleware");
 
 const router = require("express").Router();
 
-router.post("/", createProperty);
+router.post("/", upload.single("images"), createProperty);
 
 router.get("/",  getAllProperties);
 

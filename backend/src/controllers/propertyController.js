@@ -2,8 +2,13 @@ const Property = require("../models/propertyModel");
 
 const createProperty = async (req, res) => {
   try {
-    const property = await Property.create(req.body);
-
+    console.log(req.file);
+    if (!req.file) {
+      return res.status(400).json({ message: "Image file is required" });
+    }
+    const imagePaths = `/uploads/${req.file.filename}`;
+    const property = await Property.create({...req.body, images: [imagePaths]});
+    
     res.status(201).json({
       message: "Property created successfully",
       data: property,

@@ -102,7 +102,7 @@ function PropertyCard({ property }) {
 
         {/* Host Info */}
         <div className="flex items-center gap-3 mb-4">
-          <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-blue-500 to-indigo-600 flex items-center justify-center text-white text-xs font-bold">
+          <div className="w-8 h-8 rounded-full bg-linear-to-tr from-blue-500 to-indigo-600 flex items-center justify-center text-white text-xs font-bold">
             {host?.name?.charAt(0) || "H"}
           </div>
           <div className="flex-1">

@@ -35,7 +35,7 @@ export default function Signup() {
       const res = await axios.post("/user/register", userData);
       console.log(res.data);
       toast.success(res.data.message);
-      navigate("/user");
+      navigate("/");
     } catch (error) {
       console.log(error);
       toast.error(error.response?.data?.message);

@@ -25,7 +25,9 @@ export default function Login() {
       const res = await axios.post("/user/login", data);
       console.log(res.data);
       toast.success(res.data?.message);
-      navigate("/");
+      if (res.data.data.role === "guest") navigate("/");
+      else if (res.data.data.role === "host") navigate("/host");
+      else navigate("/admin");
     } catch (error) {
       console.log(error);
       toast.error(error.response?.data?.message);

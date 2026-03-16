@@ -1,10 +1,9 @@
 import { Outlet } from "react-router-dom";
+import { useAuth } from "../../context/AuthContext"
 import UserNavbar from "./UserNavbar";
-import { useAuth } from "../../context/AuthContext";
 
-function MainLayout() {
+function HostLayout() {
   const { role, handleLogout } = useAuth();
-
   return (
     <>
       <div className="sticky top-0 z-50 bg-white">
@@ -12,7 +11,7 @@ function MainLayout() {
       </div>
       <Outlet />
     </>
-  );
+  )
 }
 
-export default MainLayout;
+export default HostLayout
