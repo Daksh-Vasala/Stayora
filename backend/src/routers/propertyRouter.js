@@ -6,7 +6,7 @@ const router = require("express").Router();
 
 router.post("/", createProperty);
 
-router.get("/", authMiddleware, getAllProperties);
+router.get("/",  getAllProperties);
 
 router.get("/:id", getPropertyById);
 

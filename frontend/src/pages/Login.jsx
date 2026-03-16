@@ -25,7 +25,7 @@ export default function Login() {
       const res = await axios.post("/user/login", data);
       console.log(res.data);
       toast.success(res.data?.message);
-      navigate("/user");
+      navigate("/");
     } catch (error) {
       console.log(error);
       toast.error(error.response?.data?.message);
@@ -124,7 +124,7 @@ export default function Login() {
           <p className="text-sm mt-6 text-center text-slate-600">
             Don't have an account?{" "}
             <Link
-              to="/signup"
+              to="/register"
               className="text-blue-600 font-semibold hover:underline"
             >
               Sign up

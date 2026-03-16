@@ -27,7 +27,7 @@ const register = async (req, res) => {
 
     //creating token by taking unique fields like user id
     sendToken(createdUser, res);
-    
+
     // hide password in response
     createdUser.password = undefined;
 
@@ -55,7 +55,6 @@ const register = async (req, res) => {
 
 const login = async (req, res) => {
   try {
-
     const user = await User.findOne({ email: req.body.email });
 
     if (!user) {
@@ -78,9 +77,8 @@ const login = async (req, res) => {
 
     res.status(200).json({
       message: "User logged in successfully",
-      data: user
+      data: user,
     });
-
   } catch (error) {
     console.log(error);
     res.status(500).json({
@@ -91,19 +89,19 @@ const login = async (req, res) => {
 
 const logout = async (req, res) => {
   try {
-    res.clearCookie("token");
+    await res.clearCookie("token");
 
     res.status(200).json({
-      success:true,
-      message: "Logged out successfully"
-    })
+      success: true,
+      message: "Logged out successfully",
+    });
   } catch (error) {
     console.log(error);
     res.status(500).json({
       message: "Internal server error",
     });
   }
-}
+};
 
 const me = async (req, res) => {
   try {
@@ -111,7 +109,7 @@ const me = async (req, res) => {
 
     res.status(200).json({
       success: true,
-      data: user
+      data: user,
     });
   } catch (error) {
     console.log(error);
@@ -119,6 +117,6 @@ const me = async (req, res) => {
       message: "Internal server error",
     });
   }
-}
+};
 
 module.exports = { register, login, logout, me };

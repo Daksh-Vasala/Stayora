@@ -12,7 +12,7 @@ const router = createBrowserRouter([
   // PUBLIC ROUTES
   { path: "/login", element: <Login /> },
 
-  { path: "/signup", element: <Signup /> },
+  { path: "/register", element: <Signup /> },
 
   // USER ROUTES WITH NAVBAR
   { path: "/", element: <MainLayout />, children: [

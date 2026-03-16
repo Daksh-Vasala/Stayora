@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { 
   LayoutDashboard, 
   Users, 
@@ -19,7 +19,7 @@ import {
   Calendar
 } from 'lucide-react';
 
-const AdminSidebar = () => {
+const AdminSidebar = ({ onLogout }) => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false); // Mobile drawer state
   const [isCollapsed, setIsCollapsed] = useState(false); // Desktop collapse state
   const [activeTab, setActiveTab] = useState('Dashboard');
@@ -134,7 +134,8 @@ const AdminSidebar = () => {
           </div>
           
           {!isCollapsed && (
-            <button className="mt-4 w-full flex items-center justify-center px-4 py-2 text-sm font-medium text-red-400 bg-red-500/10 hover:bg-red-500/20 rounded-lg transition-colors border border-red-500/20">
+            <button className="mt-4 w-full flex items-center justify-center px-4 py-2 text-sm font-medium text-red-400 bg-red-500/10 hover:bg-red-500/20 rounded-lg transition-colors border border-red-500/20"
+            onClick={onLogout}>
               <LogOut className="w-4 h-4 mr-2" />
               Sign Out
             </button>
