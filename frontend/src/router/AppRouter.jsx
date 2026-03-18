@@ -13,6 +13,11 @@ import { AuthProvider } from "../context/AuthContext";
 import ListingsPage from "../pages/host/ListingsPage";
 import BookingsPage from "../pages/host/BookingsPage";
 import EarningsPage from "../pages/host/EarningsPage";
+import GuestBookingsPages from "../pages/guest/GuestBookingsPage";
+import WishlistPage from "../pages/guest/WishlistPage";
+import { GuestMessagesPage } from "../pages/guest/GuestMessagesPage";
+import AddListingPage from "../pages/host/AddListingPage";
+import ListingDetailPage from "../pages/host/ListingDetailPage";
 
 const router = createBrowserRouter([
   // PUBLIC ROUTES
@@ -27,6 +32,9 @@ const router = createBrowserRouter([
     children: [
       { index: true, element: <Home /> },
       { path: "property/:id", element: <PropertyDetail /> },
+      { path: "bookings", element: <GuestBookingsPages /> },
+      { path: "wishlist", element: <WishlistPage /> },
+      { path: "messages", element: <GuestMessagesPage /> },
     ],
   },
 
@@ -39,6 +47,8 @@ const router = createBrowserRouter([
       { path: "listings", element: <ListingsPage /> },
       { path: "bookings", element: <BookingsPage /> },
       { path: "earnings", element: <EarningsPage /> },
+      { path: "new", element: <AddListingPage /> },
+      { path: "listing/:id", element: <ListingDetailPage /> },
     ],
   },
 

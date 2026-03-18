@@ -1,4 +1,4 @@
-import PropertyGrid from '../components/property/PropertyGrid'
+import PropertyGrid from '../components/property/PropertyPage'
 
 function Home() {
   

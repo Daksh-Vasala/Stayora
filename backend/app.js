@@ -17,7 +17,7 @@ app.use("/uploads", express.static(path.join(__dirname, "../uploads")));
 require("dotenv").config();
 const PORT = process.env.PORT;
 
-const db = require("./src/utils/db.js");
+const db = require("./src/config/db.js");
 db();
 
 const userRouter = require("./src/routers/userRouter.js");
@@ -29,10 +29,10 @@ const paymentRouter = require("./src/routers/paymentRouter.js");
 
 app.use("/user", userRouter);
 app.use("/property", propertyRouter);
-app.use("/api/bookings", bookingRouter);
-app.use("/api/reviews", reviewRouter);
-app.use("/api/messages", messageRouter);
-app.use("/api/payments", paymentRouter);
+app.use("/bookings", bookingRouter);
+app.use("/reviews", reviewRouter);
+app.use("/messages", messageRouter);
+app.use("/payments", paymentRouter);
 
 app.listen(PORT, () => {
   console.log(`Server started at port ${PORT}`);

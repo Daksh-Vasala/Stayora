@@ -36,7 +36,12 @@ const propertySchema = new Schema(
 
     amenities: [String],
 
-    images: [String],
+    images: [
+      {
+        url: String,
+        public_id: String,
+      },
+    ],
 
     rating: {
       type: Number,
@@ -49,15 +54,15 @@ const propertySchema = new Schema(
     },
 
     status: {
-      type: String, 
+      type: String,
       enum: ["active", "inactive"],
-      default: "active"
+      default: "active",
     },
 
     host: {
       type: Schema.Types.ObjectId,
       required: true,
-      ref: "User"
+      ref: "User",
     },
   },
   { timestamps: true },

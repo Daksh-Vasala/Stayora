@@ -8,6 +8,7 @@ import Logo from "../components/layout/Logo";
 import InputField from "../components/ui/InputField";
 import LeftPanel from "../components/layout/LeftPanel";
 import { toast } from "react-toastify";
+import { useAuth } from "../context/AuthContext";
 
 export default function Login() {
   const [loading, setLoading] = useState(false);
@@ -18,6 +19,7 @@ export default function Login() {
     handleSubmit,
     formState: { errors },
   } = useForm();
+  const { getUser } = useAuth();
 
   const submitHandler = async (data) => {
     try {
@@ -25,6 +27,7 @@ export default function Login() {
       const res = await axios.post("/user/login", data);
       console.log(res.data);
       toast.success(res.data?.message);
+      await getUser();
       if (res.data.data.role === "guest") navigate("/");
       else if (res.data.data.role === "host") navigate("/host");
       else navigate("/admin");

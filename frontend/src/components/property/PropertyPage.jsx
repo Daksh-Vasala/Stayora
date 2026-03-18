@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { Search, Home } from "lucide-react";
 import axios from "axios";
 import PropertyCard from "./PropertyCard";
@@ -24,23 +24,26 @@ function PropertyPage() {
     getProperties();
   }, []);
 
-  const filteredProperties = properties.filter((property) => {
-    const matchesSearch =
-      property.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      property.location.city.toLowerCase().includes(searchQuery.toLowerCase());
+  const filteredProperties = useMemo(() => {
+    return properties.filter((property) => {
+      const matchesSearch =
+        property.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        property.location?.city
+          ?.toLowerCase()
+          .includes(searchQuery.toLowerCase());
 
-    const matchesType = !propertyType || property.propertyType === propertyType;
+      const matchesType =
+        !propertyType || property.propertyType === propertyType;
 
-    return matchesSearch && matchesType;
-  });
+      return matchesSearch && matchesType;
+    });
+  }, [properties, searchQuery, propertyType]);
 
   return (
     <div className="min-h-screen bg-slate-50">
-      {/* Search Section */}
       <div className="bg-white border-b border-slate-200 sticky top-16 z-40">
         <div className="max-w-7xl mx-auto px-4 md:px-6 py-4">
           <div className="flex gap-2">
-            {/* Search */}
             <div className="flex-1 relative">
               <Search
                 size={18}
@@ -50,12 +53,17 @@ function PropertyPage() {
               <input
                 type="text"
                 placeholder="Search city or property"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
                 className="w-full pl-10 pr-3 py-2.5 rounded-xl border border-slate-200 bg-slate-50 focus:outline-none focus:ring-2 focus:ring-blue-100"
               />
             </div>
 
-            {/* Filter */}
-            <select className="w-32 px-3 py-2.5 rounded-xl border border-slate-200 bg-white focus:outline-none">
+            <select
+              value={propertyType}
+              onChange={(e) => setPropertyType(e.target.value)}
+              className="w-32 px-3 py-2.5 rounded-xl border border-slate-200 bg-white focus:outline-none"
+            >
               <option value="">All</option>
               <option value="apartment">Apartment</option>
               <option value="villa">Villa</option>
@@ -69,7 +77,6 @@ function PropertyPage() {
         </div>
       </div>
 
-      {/* Properties */}
       <div className="max-w-8xl mx-auto px-4 md:px-6 py-8">
         {isLoading ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">

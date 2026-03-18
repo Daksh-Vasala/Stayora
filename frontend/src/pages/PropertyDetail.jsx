@@ -1,275 +1,249 @@
 import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import {
-  MapPin,
-  Users,
-  Star,
-  Calendar,
-  CheckCircle,
-  MessageCircle,
-  ArrowLeft,
-  ShieldCheck,
-  Wifi,
-  Car,
-  Coffee,
-  Home,
+  MapPin, Users, Star, Calendar, CheckCircle, MessageCircle,
+  ArrowLeft, ShieldCheck, Wifi, Car, Waves, Wind, Tv,
+  UtensilsCrossed, Shield, Flame, BedDouble, Bath, ChevronLeft, ChevronRight,
 } from "lucide-react";
 import axios from "axios";
 
+// Matches amenities[] strings from your schema
+const AMENITY_MAP = {
+  wifi:     { label: "Wi-Fi",    Icon: Wifi           },
+  parking:  { label: "Parking",  Icon: Car            },
+  pool:     { label: "Pool",     Icon: Waves          },
+  ac:       { label: "AC",       Icon: Wind           },
+  kitchen:  { label: "Kitchen",  Icon: UtensilsCrossed},
+  tv:       { label: "TV",       Icon: Tv             },
+  heater:   { label: "Heater",   Icon: Flame          },
+  security: { label: "Security", Icon: Shield         },
+};
+
+const inp = "w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-blue-400 transition-all bg-white";
+
 function PropertyDetail() {
   const { id } = useParams();
-
-  const [property, setProperty] = useState(null);
-  const [selectedImage, setSelectedImage] = useState(0);
-  const [bookingDates, setBookingDates] = useState({
-    checkIn: "",
-    checkOut: "",
-    guests: 1,
-  });
-
-  /* ---------------- FETCH PROPERTY ---------------- */
+  const [property, setProperty]   = useState(null);
+  const [imgIdx,   setImgIdx]     = useState(0);
+  const [booking,  setBooking]    = useState({ checkIn: "", checkOut: "", guests: 1 });
 
   useEffect(() => {
-    const fetchProperty = async () => {
-      try {
-        const { data } = await axios.get(`/property/${id}`);
-        setProperty(data.data);
-      } catch (error) {
-        console.error(error);
-      }
-    };
-
-    fetchProperty();
+    axios.get(`/property/${id}`)
+      .then(({ data }) => setProperty(data.data))
+      .catch(console.error);
   }, [id]);
 
-  /* ---------------- BOOKING HANDLERS ---------------- */
+  const updateBooking = (k, v) => setBooking(p => ({ ...p, [k]: v }));
 
-  const updateBooking = (key, value) => {
-    setBookingDates((prev) => ({ ...prev, [key]: value }));
-  };
+  const nights = booking.checkIn && booking.checkOut
+    ? Math.max((new Date(booking.checkOut) - new Date(booking.checkIn)) / 86400000, 0)
+    : 0;
 
-  /* ---------------- PRICE CALCULATION ---------------- */
+  const total = nights * (property?.pricePerNight || 0);
 
-  const calculateTotalPrice = () => {
-    const { checkIn, checkOut } = bookingDates;
+  // ── images is [{url, public_id}] per schema ──────────────────────────────
+  const images  = property?.images || [];
+  const currImg = images[imgIdx]?.url || "";
 
-    if (!checkIn || !checkOut || !property) return 0;
+  const prev = () => setImgIdx(i => (i - 1 + images.length) % images.length);
+  const next = () => setImgIdx(i => (i + 1) % images.length);
 
-    const nights =
-      (new Date(checkOut) - new Date(checkIn)) / (1000 * 60 * 60 * 24);
-
-    return Math.max(nights, 0) * property.pricePerNight;
-  };
-
-  const totalPrice = calculateTotalPrice();
-
-  if (!property) return null;
+  if (!property) return (
+    <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="w-8 h-8 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
+    </div>
+  );
 
   return (
-    <div className="min-h-screen bg-slate-50">
-      {/* Back Button */}
-      <div className="bg-white border-b border-slate-200 sticky top-16 z-40">
-        <div className="max-w-7xl mx-auto px-4 md:px-6 py-4">
-          <Link
-            to="/"
-            className="flex items-center gap-2 text-slate-600 hover:text-blue-600"
-          >
-            <ArrowLeft size={18} />
-            <span className="text-sm font-medium">Back</span>
-          </Link>
-        </div>
-      </div>
+    <div className="min-h-screen bg-gray-50">
 
-      {/* Main */}
-      <div className="max-w-7xl mx-auto px-4 md:px-6 py-8">
-        <div className="grid lg:grid-cols-3 gap-8">
-          {/* LEFT */}
-          <div className="lg:col-span-2 space-y-6">
-            {/* Header */}
-            <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
-              <h1 className="text-2xl font-bold text-slate-900 mb-2">
-                {property.title}
-              </h1>
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6">
+        <div className="grid lg:grid-cols-3 gap-6">
 
-              <div className="flex items-center gap-2 text-slate-500 mb-4">
-                <MapPin size={16} />
-                {property.location?.city}, {property.location?.country}
-              </div>
+          {/* ── LEFT ── */}
+          <div className="lg:col-span-2 space-y-4">
 
-              <div className="flex items-center gap-4">
-                <span className="px-3 py-1 bg-blue-600 text-white text-sm font-semibold rounded-full">
-                  {property.propertyType?.toUpperCase()}
-                </span>
-
-                <div className="flex items-center gap-1">
-                  <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-                  <span className="font-semibold">{property.rating}</span>
-                  <span className="text-slate-500 text-sm">
-                    ({property.reviewCount})
+            {/* Title */}
+            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
+              <div className="flex items-start justify-between gap-3 flex-wrap">
+                <div>
+                  <span className="text-[11px] font-bold text-white bg-blue-600 px-2.5 py-1 rounded-full capitalize mb-2 inline-block">
+                    {property.propertyType}
                   </span>
+                  <h1 className="text-xl font-bold text-gray-900">{property.title}</h1>
+                  <p className="text-sm text-gray-400 flex items-center gap-1 mt-1">
+                    <MapPin size={13} className="text-blue-500 shrink-0" />
+                    {property.location?.address && `${property.location.address}, `}
+                    {property.location?.city}, {property.location?.country}
+                  </p>
+                </div>
+                <div className="flex items-center gap-1 shrink-0">
+                  <Star size={14} className="fill-yellow-400 text-yellow-400" />
+                  <span className="text-sm font-bold text-gray-900">{property.rating}</span>
+                  <span className="text-xs text-gray-400">({property.reviewCount} reviews)</span>
                 </div>
               </div>
-            </div>
 
-            {/* Images */}
-            <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
-              <img
-                src={property.images?.[selectedImage]}
-                alt={property.title}
-                className="w-full h-80 object-cover rounded-xl"
-              />
-
-              <div className="flex gap-2 mt-4 overflow-x-auto">
-                {property.images?.map((img, i) => (
-                  <button
-                    key={i}
-                    onClick={() => setSelectedImage(i)}
-                    className={`w-20 h-20 rounded-lg overflow-hidden border-2 ${
-                      selectedImage === i
-                        ? "border-blue-600"
-                        : "border-slate-200"
-                    }`}
-                  >
-                    <img
-                      src={img}
-                      alt=""
-                      className="w-full h-full object-cover"
-                    />
-                  </button>
+              {/* Specs row */}
+              <div className="flex items-center gap-5 mt-4 pt-4 border-t border-gray-50 text-sm text-gray-600">
+                {[
+                  { Icon: Users,    v: `${property.maxGuests} guests`   },
+                  { Icon: BedDouble,v: `${property.bedrooms} bedrooms`  },
+                  { Icon: BedDouble,v: `${property.beds} beds`          },
+                  { Icon: Bath,     v: `${property.bathrooms} baths`    },
+                ].map(({ Icon, v }, i) => (
+                  <span key={i} className="flex items-center gap-1.5 text-xs font-medium">
+                    <Icon size={13} className="text-blue-600" />{v}
+                  </span>
                 ))}
               </div>
             </div>
+
+            {/* Images — uses images[].url from schema */}
+            {images.length > 0 && (
+              <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
+                {/* Main image */}
+                <div className="relative h-64 sm:h-80 rounded-xl overflow-hidden bg-gray-100">
+                  <img
+                    src={currImg}
+                    alt={property.title}
+                    className="w-full h-full object-cover"
+                    onError={e => { e.target.style.display = "none"; }}
+                  />
+                  {images.length > 1 && (
+                    <>
+                      <button onClick={prev} className="absolute left-3 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-white/90 shadow flex items-center justify-center border-none cursor-pointer hover:bg-white transition-colors">
+                        <ChevronLeft size={15} className="text-gray-700" />
+                      </button>
+                      <button onClick={next} className="absolute right-3 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-white/90 shadow flex items-center justify-center border-none cursor-pointer hover:bg-white transition-colors">
+                        <ChevronRight size={15} className="text-gray-700" />
+                      </button>
+                      <span className="absolute bottom-3 right-3 text-[11px] font-semibold bg-black/50 text-white px-2 py-0.5 rounded-full">
+                        {imgIdx + 1} / {images.length}
+                      </span>
+                    </>
+                  )}
+                </div>
+                {/* Thumbnails — images[i].url */}
+                {images.length > 1 && (
+                  <div className="flex gap-2 mt-3 overflow-x-auto [scrollbar-width:none]">
+                    {images.map((img, i) => (
+                      <button key={img.public_id || i} onClick={() => setImgIdx(i)}
+                        className={`shrink-0 w-16 h-12 rounded-xl overflow-hidden border-2 cursor-pointer transition-all ${i === imgIdx ? "border-blue-600" : "border-transparent opacity-60 hover:opacity-100"}`}>
+                        <img src={img.url} alt="" className="w-full h-full object-cover"
+                          onError={e => { e.target.style.display = "none"; }} />
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
 
             {/* Description */}
-            <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
-              <h2 className="text-lg font-bold mb-3">About</h2>
-              <p className="text-slate-600">{property.description}</p>
+            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
+              <h2 className="text-sm font-bold text-gray-900 mb-2">About this place</h2>
+              <p className="text-[13.5px] text-gray-600 leading-relaxed">{property.description}</p>
             </div>
 
-            {/* Amenities */}
-            <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
-              <h2 className="text-lg font-bold mb-4">Amenities</h2>
-
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                {[
-                  { icon: Wifi, name: "WiFi" },
-                  { icon: Car, name: "Parking" },
-                  { icon: Coffee, name: "Kitchen" },
-                  { icon: Home, name: "AC" },
-                  { icon: Calendar, name: "Pool" },
-                  { icon: CheckCircle, name: "Washer" },
-                ].map((item, i) => (
-                  <div
-                    key={i}
-                    className="flex items-center gap-3 p-3 bg-slate-50 rounded-lg"
-                  >
-                    <item.icon size={18} className="text-blue-600" />
-                    <span className="text-sm">{item.name}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* House Rules */}
-            {property.houseRules?.length > 0 && (
-              <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
-                <h2 className="text-lg font-bold mb-4">House Rules</h2>
-
-                <div className="space-y-2">
-                  {property.houseRules.map((rule, i) => (
-                    <div key={i} className="flex items-center gap-2">
-                      <CheckCircle size={16} className="text-green-500" />
-                      <span className="text-sm text-slate-600">{rule}</span>
-                    </div>
-                  ))}
+            {/* Amenities — maps amenities[] strings to icons */}
+            {property.amenities?.length > 0 && (
+              <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
+                <h2 className="text-sm font-bold text-gray-900 mb-3">Amenities</h2>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                  {property.amenities.map(a => {
+                    const cfg = AMENITY_MAP[a];
+                    if (!cfg) return null;
+                    const { label, Icon } = cfg;
+                    return (
+                      <div key={a} className="flex items-center gap-2.5 bg-blue-50 px-3 py-2.5 rounded-xl">
+                        <Icon size={14} className="text-blue-600 shrink-0" />
+                        <span className="text-[13px] font-medium text-blue-700">{label}</span>
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
             )}
           </div>
 
-          {/* RIGHT BOOKING CARD */}
+          {/* ── RIGHT — Booking card ── */}
           <div>
-            <div className="bg-white rounded-2xl shadow-lg border border-slate-200 p-6 sticky top-24">
-              <div className="mb-6">
-                <span className="text-3xl font-bold">
-                  ₹{property.pricePerNight}
-                </span>
-                <span className="text-slate-500"> / night</span>
+            <div className="bg-white rounded-2xl border border-gray-100 shadow-lg p-5 sticky top-20">
 
-                <p className="text-sm text-slate-500 mt-1">
-                  Total:{" "}
-                  <span className="font-semibold text-slate-900">
-                    ₹{totalPrice}
-                  </span>
-                </p>
+              {/* Price */}
+              <div className="mb-5">
+                <span className="text-2xl font-bold text-gray-900">₹{property.pricePerNight?.toLocaleString()}</span>
+                <span className="text-sm text-gray-400"> / night</span>
+                {nights > 0 && (
+                  <p className="text-xs text-gray-400 mt-1">
+                    {nights} night{nights > 1 ? "s" : ""} ·{" "}
+                    <span className="font-bold text-gray-900">₹{total.toLocaleString()} total</span>
+                  </p>
+                )}
               </div>
 
-              {/* Booking Form */}
-              <div className="space-y-4 mb-6">
-                <input
-                  type="date"
-                  value={bookingDates.checkIn}
-                  onChange={(e) => updateBooking("checkIn", e.target.value)}
-                  className="input"
-                />
-
-                <input
-                  type="date"
-                  value={bookingDates.checkOut}
-                  onChange={(e) => updateBooking("checkOut", e.target.value)}
-                  className="input"
-                />
-
-                <select
-                  value={bookingDates.guests}
-                  onChange={(e) =>
-                    updateBooking("guests", parseInt(e.target.value))
-                  }
-                  className="input"
-                >
-                  {[1, 2, 3, 4, 5, 6].map((g) => (
-                    <option key={g}>{g}</option>
-                  ))}
-                </select>
+              {/* Form */}
+              <div className="space-y-3 mb-4">
+                <div>
+                  <label className="block text-xs font-semibold text-gray-500 mb-1">Check-in</label>
+                  <input type="date" className={inp} value={booking.checkIn}
+                    min={new Date().toISOString().split("T")[0]}
+                    onChange={e => updateBooking("checkIn", e.target.value)} />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-gray-500 mb-1">Check-out</label>
+                  <input type="date" className={inp} value={booking.checkOut}
+                    min={booking.checkIn || new Date().toISOString().split("T")[0]}
+                    onChange={e => updateBooking("checkOut", e.target.value)} />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-gray-500 mb-1">Guests</label>
+                  <select className={inp} value={booking.guests}
+                    onChange={e => updateBooking("guests", parseInt(e.target.value))}>
+                    {Array.from({ length: property.maxGuests || 6 }, (_, i) => i + 1).map(g => (
+                      <option key={g} value={g}>{g} guest{g > 1 ? "s" : ""}</option>
+                    ))}
+                  </select>
+                </div>
               </div>
 
               <button
-                disabled={!bookingDates.checkIn || !bookingDates.checkOut}
-                className="w-full bg-blue-600 text-white py-3 rounded-xl font-semibold hover:bg-blue-700 disabled:opacity-50"
+                disabled={!booking.checkIn || !booking.checkOut || nights <= 0}
+                className="w-full bg-blue-600 hover:bg-blue-700 disabled:opacity-40 disabled:cursor-not-allowed text-white py-3 rounded-xl font-bold text-sm transition-colors border-none cursor-pointer"
               >
                 Reserve Now
               </button>
 
-              <div className="mt-4 pt-4 border-t text-sm text-slate-500 flex items-center gap-2">
-                <ShieldCheck size={16} className="text-green-500" />
-                Secure payment • Free cancellation
+              <div className="mt-3 flex items-center gap-1.5 text-[11px] text-gray-400">
+                <ShieldCheck size={13} className="text-green-500 shrink-0" />
+                Secure payment · Free cancellation
               </div>
 
-              {/* Host */}
-              <div className="mt-6 pt-6 border-t">
-                <div className="flex items-center gap-3">
-                  <img
-                    src={property.host?.avatar}
-                    alt=""
-                    className="w-12 h-12 rounded-full object-cover"
-                  />
-                  <div>
-                    <p className="text-sm font-semibold">
-                      {property.host?.name}
-                    </p>
-                    {property.host?.isSuperhost && (
-                      <span className="text-xs text-blue-600">Superhost</span>
+              {/* Host — uses host ref populated from User */}
+              {property.host && (
+                <div className="mt-5 pt-5 border-t border-gray-100">
+                  <div className="flex items-center gap-3">
+                    {property.host.avatar ? (
+                      <img src={property.host.avatar} alt=""
+                        className="w-10 h-10 rounded-full object-cover" />
+                    ) : (
+                      <div className="w-10 h-10 rounded-full bg-blue-100 text-blue-600 text-sm font-bold flex items-center justify-center shrink-0">
+                        {property.host.name?.[0]?.toUpperCase() || "H"}
+                      </div>
                     )}
+                    <div>
+                      <p className="text-sm font-semibold text-gray-900">{property.host.name || "Host"}</p>
+                      <p className="text-[11px] text-gray-400">Verified Host</p>
+                    </div>
                   </div>
+                  <button className="mt-3 w-full flex items-center justify-center gap-2 py-2.5 rounded-xl border border-gray-200 text-sm font-semibold text-gray-600 hover:bg-gray-50 cursor-pointer bg-white transition-colors">
+                    <MessageCircle size={14} /> Message Host
+                  </button>
                 </div>
-
-                <button className="mt-3 w-full flex items-center justify-center gap-2 px-4 py-2 border rounded-xl text-sm hover:bg-slate-50">
-                  <MessageCircle size={16} />
-                  Message Host
-                </button>
-              </div>
+              )}
             </div>
           </div>
+
         </div>
       </div>
     </div>
