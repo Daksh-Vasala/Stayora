@@ -37,7 +37,7 @@ const router = createBrowserRouter([
       {
         path: "bookings",
         element: (
-          <ProtectedRoute allowedRoles={["user", "host"]}>
+          <ProtectedRoute allowedRoles={["guest", "host"]}>
             <GuestBookingsPages />
           </ProtectedRoute>
         ),
@@ -45,7 +45,7 @@ const router = createBrowserRouter([
       {
         path: "wishlist",
         element: (
-          <ProtectedRoute allowedRoles={["user", "host"]}>
+          <ProtectedRoute allowedRoles={["guest", "host"]}>
             <WishlistPage />
           </ProtectedRoute>
         ),
@@ -53,7 +53,7 @@ const router = createBrowserRouter([
       {
         path: "messages",
         element: (
-          <ProtectedRoute allowedRoles={["user", "host"]}>
+          <ProtectedRoute allowedRoles={["guest", "host"]}>
             <GuestMessagesPage />
           </ProtectedRoute>
         ),

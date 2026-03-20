@@ -6,6 +6,8 @@ import {
   UtensilsCrossed, Shield, Flame, BedDouble, Bath, ChevronLeft, ChevronRight,
 } from "lucide-react";
 import axios from "axios";
+import { toast } from "react-toastify";
+import { useNavigate } from "react-router-dom";
 
 // Matches amenities[] strings from your schema
 const AMENITY_MAP = {
@@ -47,12 +49,28 @@ function PropertyDetail() {
 
   const prev = () => setImgIdx(i => (i - 1 + images.length) % images.length);
   const next = () => setImgIdx(i => (i + 1) % images.length);
+  const navigate = useNavigate()
 
   if (!property) return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50">
       <div className="w-8 h-8 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
     </div>
   );
+
+  const reserveBooking = async () => {
+    try {
+      const guestsCount = booking.guests
+      const checkIn = booking.checkIn
+      const checkOut = booking.checkOut
+      const res = await axios.post("/bookings", {checkIn, checkOut, guestsCount, propertyId: id});
+      console.log(res);
+      toast.success(res.data.message);
+      navigate("/");
+    } catch (error) {
+      console.log(error);
+      toast.error(error?.response?.data?.message || "Internal server error");
+    }
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -210,6 +228,7 @@ function PropertyDetail() {
               <button
                 disabled={!booking.checkIn || !booking.checkOut || nights <= 0}
                 className="w-full bg-blue-600 hover:bg-blue-700 disabled:opacity-40 disabled:cursor-not-allowed text-white py-3 rounded-xl font-bold text-sm transition-colors border-none cursor-pointer"
+                onClick={reserveBooking}
               >
                 Reserve Now
               </button>

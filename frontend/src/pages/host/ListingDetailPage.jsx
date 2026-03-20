@@ -19,7 +19,7 @@ import {
   Eye,
   EyeOff,
 } from "lucide-react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, Link } from "react-router-dom";
 import axios from "axios";
 
 const AMENITY_MAP = {
@@ -296,12 +296,12 @@ export default function ListingDetailPage() {
                 {isActive ? <EyeOff /> : <Eye />}
                 {isActive ? "Deactivate listing" : "Activate listing"}
               </button>
-              <a
-                href={`/host/listings/${listing._id}/edit`}
+              <Link
+                to={`/host/listing/update/${listing._id}`}
                 className="w-full flex items-center gap-2 justify-center py-2.5 rounded-xl text-sm font-semibold bg-blue-600 hover:bg-blue-700 text-white cursor-pointer no-underline transition-colors"
               >
                 <Edit2 size={14} /> Edit listing
-              </a>
+              </Link>
               <button
                 onClick={handleSoftDelete}
                 className="w-full flex items-center gap-2 justify-center py-2.5 rounded-xl text-sm font-semibold border border-red-100 text-red-500 hover:bg-red-50 bg-white cursor-pointer transition-colors"

@@ -1,18 +1,55 @@
 const Booking = require("../models/bookingModel");
+const Property = require("../models/propertyModel");
 
 // CREATE BOOKING
 exports.createBooking = async (req, res) => {
   try {
+    const { propertyId, checkIn, checkOut, guestsCount } = req.body;
+
+    const existingBooking = await Booking.findOne({
+      property: propertyId,
+      status: { $in: ["pending", "confirmed"] },
+      $or: [
+        {
+          checkIn: { $lt: checkOut },
+          checkOut: { $gt: checkIn },
+        },
+      ],
+    });
+
+    if (existingBooking) {
+      return res.status(400).json({
+        message: "Property not available for booking",
+      });
+    }
+
+    const property = await Property.findById(propertyId);
+    if (!property) {
+      return res.status(400).json({
+        message: "Property not found",
+      });
+    }
+
+    const host = property.host;
+    const totalPrice = property.pricePerNight;
+
     const booking = await Booking.create({
-      ...req.body,
+      property: propertyId,
+      checkIn,
+      checkOut,
+      host,
       guest: req.user.id,
+      guestsCount,
+      totalPrice,
     });
 
     res.status(201).json({
       success: true,
       data: booking,
+      message: "Booking created",
     });
   } catch (error) {
+    console.log(error);
     res.status(500).json({ message: error.message });
   }
 };
