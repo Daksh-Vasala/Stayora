@@ -16,6 +16,8 @@ import {
   Flame,
   Edit2,
   Trash2,
+  Eye,
+  EyeOff,
 } from "lucide-react";
 import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
@@ -102,7 +104,7 @@ export default function ListingDetailPage() {
 
   const [listing, setListing] = useState(null);
   const [tab, setTab] = useState("overview");
-  
+
   const fetchProperty = async () => {
     try {
       const res = await axios.get(`/property/${id}`);
@@ -129,6 +131,20 @@ export default function ListingDetailPage() {
     try {
       await axios.patch(`/property/deactivate/${id}`, { status: "inactive" });
       navigate("/host/listings");
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleToggleStatus = async () => {
+    try {
+      const newStatus = isActive ? "inactive" : "active";
+
+      await axios.patch(`/property/deactivate/${id}`, {
+        status: newStatus,
+      });
+
+      fetchProperty(); // refresh UI
     } catch (err) {
       console.error(err);
     }
@@ -162,7 +178,19 @@ export default function ListingDetailPage() {
                   </span>
                 </div>
               </div>
-              <h2 className="text-base font-bold text-gray-900 mt-2 mb-1">
+              <div className="flex items-center gap-2 mt-2">
+                <span
+                  className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                    isActive
+                      ? "bg-green-100 text-green-600"
+                      : "bg-gray-200 text-gray-500"
+                  }`}
+                >
+                  {isActive ? "Active" : "Inactive"}
+                </span>
+              </div>
+
+              <h2 className="text-base font-bold text-gray-900 mt-1 mb-1">
                 {listing.title}
               </h2>
               <p className="text-[12px] text-gray-400 flex items-center gap-1">
@@ -256,6 +284,18 @@ export default function ListingDetailPage() {
             {/* Danger zone */}
             <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 flex flex-col gap-3">
               <h3 className="text-sm mb-5 font-bold text-gray-900">Manage</h3>
+              <button
+                onClick={handleToggleStatus}
+                className={`w-full flex items-center gap-2 justify-center py-2.5 rounded-xl text-sm font-semibold border transition-colors cursor-pointer
+                  ${
+                    isActive
+                      ? "border-yellow-100 text-yellow-600 hover:bg-yellow-50"
+                      : "border-green-100 text-green-600 hover:bg-green-50"
+                  }`}
+              >
+                {isActive ? <EyeOff /> : <Eye />}
+                {isActive ? "Deactivate listing" : "Activate listing"}
+              </button>
               <a
                 href={`/host/listings/${listing._id}/edit`}
                 className="w-full flex items-center gap-2 justify-center py-2.5 rounded-xl text-sm font-semibold bg-blue-600 hover:bg-blue-700 text-white cursor-pointer no-underline transition-colors"
@@ -267,7 +307,7 @@ export default function ListingDetailPage() {
                 className="w-full flex items-center gap-2 justify-center py-2.5 rounded-xl text-sm font-semibold border border-red-100 text-red-500 hover:bg-red-50 bg-white cursor-pointer transition-colors"
               >
                 <Trash2 size={14} /> Delete listing
-              </button> 
+              </button>
             </div>
           </div>
         )}

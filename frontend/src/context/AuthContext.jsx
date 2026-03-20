@@ -5,13 +5,17 @@ const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   const getUser = async () => {
     try {
       const res = await axios.get("/user/me");
       setUser(res.data.data);
     } catch (error) {
+      console.log("Auth error:", error?.response?.data || error.message);
       setUser(null);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -29,10 +33,12 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   return (
-    <AuthContext.Provider value={{ user, role: user?.role, getUser, handleLogout: logout }}>
+    <AuthContext.Provider
+      value={{ user, role: user?.role, getUser, handleLogout: logout, loading }}
+    >
       {children}
     </AuthContext.Provider>
   );
-}
+};
 
 export const useAuth = () => useContext(AuthContext);

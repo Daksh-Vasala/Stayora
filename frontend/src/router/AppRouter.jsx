@@ -18,6 +18,8 @@ import WishlistPage from "../pages/guest/WishlistPage";
 import { GuestMessagesPage } from "../pages/guest/GuestMessagesPage";
 import AddListingPage from "../pages/host/AddListingPage";
 import ListingDetailPage from "../pages/host/ListingDetailPage";
+import UpdateListingPage from "../pages/host/UpdateListingPage";
+import ProtectedRoute from "../components/ProtectedRoute";
 
 const router = createBrowserRouter([
   // PUBLIC ROUTES
@@ -32,16 +34,41 @@ const router = createBrowserRouter([
     children: [
       { index: true, element: <Home /> },
       { path: "property/:id", element: <PropertyDetail /> },
-      { path: "bookings", element: <GuestBookingsPages /> },
-      { path: "wishlist", element: <WishlistPage /> },
-      { path: "messages", element: <GuestMessagesPage /> },
+      {
+        path: "bookings",
+        element: (
+          <ProtectedRoute allowedRoles={["user", "host"]}>
+            <GuestBookingsPages />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "wishlist",
+        element: (
+          <ProtectedRoute allowedRoles={["user", "host"]}>
+            <WishlistPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "messages",
+        element: (
+          <ProtectedRoute allowedRoles={["user", "host"]}>
+            <GuestMessagesPage />
+          </ProtectedRoute>
+        ),
+      },
     ],
   },
 
   //HOST ROUTE
   {
     path: "/host",
-    element: <HostLayout />,
+    element: (
+      <ProtectedRoute allowedRoles={["host"]}>
+        <HostLayout />
+      </ProtectedRoute>
+    ),
     children: [
       { index: true, element: <HostDashboard /> },
       { path: "listings", element: <ListingsPage /> },
@@ -49,11 +76,19 @@ const router = createBrowserRouter([
       { path: "earnings", element: <EarningsPage /> },
       { path: "new", element: <AddListingPage /> },
       { path: "listing/:id", element: <ListingDetailPage /> },
+      { path: "listing/update/:id", element: <UpdateListingPage /> },
     ],
   },
 
   // ADMIN ROUTE
-  { path: "/admin", element: <AdminSidebar /> },
+  {
+    path: "/admin",
+    element: (
+      <ProtectedRoute allowedRoles={["admin"]}>
+        <AdminSidebar />
+      </ProtectedRoute>
+    ),
+  },
 ]);
 
 const AppRouter = () => {

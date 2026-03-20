@@ -112,12 +112,12 @@ const ListingCard = ({ listing, handleSoftDelete }) => {
             </Link>
 
             {/* Edit */}
-            <button className="group w-9 h-9 flex items-center justify-center rounded-xl bg-gray-50 hover:bg-blue-50 transition-all duration-200 cursor-pointer">
+            <Link to={`/host/listing/update/${listing.id}`} className="group w-9 h-9 flex items-center justify-center rounded-xl bg-gray-50 hover:bg-blue-50 transition-all duration-200 cursor-pointer">
               <Edit2
                 size={15}
                 className="text-gray-500 group-hover:text-blue-600 group-hover:scale-110 transition-all"
               />
-            </button>
+            </Link>
 
             {/* Delete */}
             <button

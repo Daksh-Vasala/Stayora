@@ -54,7 +54,10 @@ const createProperty = async (req, res) => {
 
 const getAllProperties = async (req, res) => {
   try {
-    const properties = await Property.find({status: "active"}).populate("host", "name email");
+    const properties = await Property.find({ status: "active" }).populate(
+      "host",
+      "name email",
+    );
     res.status(200).json({
       message: "Properties fetched",
       data: properties,
@@ -89,24 +92,42 @@ const getPropertyById = async (req, res) => {
 };
 
 const updateProperty = async (req, res) => {
-  try {
-    const property = await Property.findByIdAndUpdate(req.params.id, req.body, {
-      new: true,
-    });
+  const { existingImages, deletedImages } = req.body;
 
-    if (!property) {
-      return res.status(404).json({
-        message: "Property not found",
+  const parsedExisting = JSON.parse(existingImages || "[]");
+  const parsedDeleted = JSON.parse(deletedImages || "[]");
+
+  // 1. 🔥 Delete removed images from Cloudinary
+  for (const public_id of parsedDeleted) {
+    await uploadToCloudinary.uploader.destroy(public_id);
+  }
+
+  // 2. 🔥 Upload new images (multer files)
+  const uploaded = [];
+  if (req.files?.length) {
+    for (const file of req.files) {
+      const result = await cloudinary.uploader.upload(file.path);
+      uploaded.push({
+        url: result.secure_url,
+        public_id: result.public_id,
       });
     }
-
-    res.status(200).json({
-      message: "Property updated",
-      data: property,
-    });
-  } catch (error) {
-    res.status(500).json({ message: error.message });
   }
+
+  // 3. 🔥 Final images array
+  const finalImages = [...parsedExisting, ...uploaded];
+
+  // 4. Update DB
+  const updated = await Property.findByIdAndUpdate(
+    req.params.id,
+    {
+      ...req.body,
+      images: finalImages,
+    },
+    { new: true },
+  );
+
+  res.json({ success: true, data: updated });
 };
 
 const deleteProperty = async (req, res) => {
@@ -129,7 +150,6 @@ const deleteProperty = async (req, res) => {
     res.status(200).json({
       message: "Property marked as deleted",
     });
-
   } catch (error) {
     console.log(error);
     res.status(500).json({ message: error.message });
@@ -138,7 +158,10 @@ const deleteProperty = async (req, res) => {
 
 const getPropertiesOfHost = async (req, res) => {
   try {
-    const properties = await Property.find({ host: req.user.id, status: "active" });
+    const properties = await Property.find({
+      host: req.user.id,
+      status: { $ne: "deleted" },
+    });
 
     res.status(200).json({
       message: "Properties fetched",
@@ -150,19 +173,20 @@ const getPropertiesOfHost = async (req, res) => {
   }
 };
 
-const softDeleteProperty = async (req, res) => {
+const toggleStatus = async (req, res) => {
   try {
+    const newStatus = req.body.status;
     const property = await Property.findById(req.params.id);
 
     if (!property) {
       return res.status(404).json({ message: "Property not found" });
     }
 
-    if(req.user.id !== property.host.toString()){
+    if (req.user.id !== property.host.toString()) {
       return res.status(403).json({ message: "Not authorized" });
     }
 
-    property.status = "inactive";
+    property.status = newStatus || property.status;
     await property.save();
 
     res.status(200).json({
@@ -173,7 +197,7 @@ const softDeleteProperty = async (req, res) => {
     console.log(error);
     res.status(500).json({ message: error.message });
   }
-}
+};
 
 module.exports = {
   getAllProperties,
@@ -182,5 +206,5 @@ module.exports = {
   deleteProperty,
   updateProperty,
   getPropertiesOfHost,
-  softDeleteProperty
+  toggleStatus,
 };

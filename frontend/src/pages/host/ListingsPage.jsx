@@ -28,7 +28,6 @@ function ListingsPage() {
       }));
 
       setListings(normalized);
-      console.log(listings);
     } catch (error) {
       console.log(error);
     }
@@ -37,7 +36,7 @@ function ListingsPage() {
     try {
       const isConfirm = window.confirm("Do you want to delete this?");
       if (isConfirm) {
-        await axios.patch(`/property/deactivate/${id}`, { status: "inactive" });
+        await axios.patch(`/property/deactivate/${id}`, { status: "deleted" });
         getData();
         navigate("/host/listings");
       }

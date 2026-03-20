@@ -1,22 +1,42 @@
-const { getAllProperties, createProperty, getPropertyById, updateProperty, deleteProperty, getPropertiesOfHost, softDeleteProperty } = require("../controllers/propertyController");
+const {
+  getAllProperties,
+  createProperty,
+  getPropertyById,
+  updateProperty,
+  deleteProperty,
+  getPropertiesOfHost,
+  toggleStatus,
+} = require("../controllers/propertyController");
 const authMiddleware = require("../middlewares/authMiddleware");
 const hostMiddleware = require("../middlewares/hostMiddleware");
 const upload = require("../middlewares/uploadMiddleware");
 
 const router = require("express").Router();
 
-router.get("/",  getAllProperties);
+router.get("/", getAllProperties);
 
-router.post("/", authMiddleware, hostMiddleware, upload.array("images"), createProperty);
+router.post(
+  "/",
+  authMiddleware,
+  hostMiddleware,
+  upload.array("images"),
+  createProperty,
+);
 
 router.get("/host", authMiddleware, hostMiddleware, getPropertiesOfHost);
 
 router.get("/:id", authMiddleware, getPropertyById);
 
-router.put("/:id", updateProperty);
+router.put(
+  "/:id",
+  authMiddleware,
+  hostMiddleware,
+  upload.array("images"),
+  updateProperty,
+);
 
-router.patch("/deactivate/:id", authMiddleware, hostMiddleware, softDeleteProperty);
+router.patch("/deactivate/:id", authMiddleware, hostMiddleware, toggleStatus);
 
 router.patch("/delete/:id", authMiddleware, deleteProperty);
 
-module.exports = router
+module.exports = router;
