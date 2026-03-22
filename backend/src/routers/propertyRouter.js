@@ -25,7 +25,7 @@ router.post(
 
 router.get("/host", authMiddleware, hostMiddleware, getPropertiesOfHost);
 
-router.get("/:id", authMiddleware, getPropertyById);
+router.get("/:id", getPropertyById);
 
 router.put(
   "/:id",

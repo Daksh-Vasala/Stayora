@@ -8,6 +8,7 @@ import {
 import axios from "axios";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 
 // Matches amenities[] strings from your schema
 const AMENITY_MAP = {
@@ -50,6 +51,7 @@ function PropertyDetail() {
   const prev = () => setImgIdx(i => (i - 1 + images.length) % images.length);
   const next = () => setImgIdx(i => (i + 1) % images.length);
   const navigate = useNavigate()
+  const {user} = useAuth();
 
   if (!property) return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50">
@@ -59,6 +61,10 @@ function PropertyDetail() {
 
   const reserveBooking = async () => {
     try {
+      if(!user) {
+        toast.error("Please login to make a booking");
+        return navigate("/login");
+      }
       const guestsCount = booking.guests
       const checkIn = booking.checkIn
       const checkOut = booking.checkOut
