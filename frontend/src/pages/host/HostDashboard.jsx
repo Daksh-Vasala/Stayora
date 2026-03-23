@@ -1,4 +1,4 @@
-import React, { memo } from "react";
+import { memo } from "react";
 import {
   DollarSign,
   List,
@@ -10,6 +10,7 @@ import {
   TrendingUp,
   TrendingDown,
 } from "lucide-react";
+import { Link } from "react-router-dom";
 
 // ── Mock data ─────────────────────────────────────────────────────────────────
 const STATS = [
@@ -216,7 +217,7 @@ export default function HostDashboard() {
       {/* Welcome */}
       <div>
         <h1 className="text-xl font-bold text-gray-900">
-          Good morning, Raj 👋
+          Good morning 👋
         </h1>
 
         <p className="text-sm text-gray-400 mt-0.5">
@@ -240,9 +241,9 @@ export default function HostDashboard() {
               Recent Bookings
             </h3>
 
-            <button className="text-xs text-blue-600 font-semibold hover:underline border-none bg-transparent cursor-pointer flex items-center gap-0.5">
+            <Link to={"/host/bookings"} className="text-xs text-blue-600 font-semibold hover:underline border-none bg-transparent cursor-pointer flex items-center gap-0.5">
               View all <ChevronRight size={13} />
-            </button>
+            </Link>
           </div>
 
           <div className="divide-y divide-gray-50">

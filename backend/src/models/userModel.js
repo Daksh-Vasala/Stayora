@@ -29,6 +29,14 @@ const userSchema = new Schema(
 
     profilePic: String,
 
+    resetPasswordToken: {
+      type: String
+    },
+
+    resetPasswordExpire: {
+      type: Date
+    },
+
     is_verified: {
       type: Boolean,
       default: false,

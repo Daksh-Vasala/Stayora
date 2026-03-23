@@ -1,11 +1,8 @@
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
-
 import Login from "../pages/Login";
 import Signup from "../pages/Signup";
 import Home from "../pages/Home";
 import PropertyDetail from "../pages/PropertyDetail";
-
-import AdminSidebar from "../components/layout/AdminSidebar";
 import MainLayout from "../components/layout/MainLayout";
 import HostLayout from "../components/layout/HostLayout";
 import HostDashboard from "../pages/host/HostDashboard";
@@ -20,6 +17,14 @@ import AddListingPage from "../pages/host/AddListingPage";
 import ListingDetailPage from "../pages/host/ListingDetailPage";
 import UpdateListingPage from "../pages/host/UpdateListingPage";
 import ProtectedRoute from "../components/ProtectedRoute";
+import AdminLayout from "../components/layout/AdminLayout";
+import AdminDashboard from "../pages/admin/AdminDashboard";
+import AdminUsers from "../pages/admin/AdminUsers";
+import AdminListings from "../pages/admin/AdminListings";
+import AdminFinancials from "../pages/admin/AdminFinancials";
+import AdminMessages from "../pages/admin/AdminMessages";
+import AdminDisputes from "../pages/admin/AdminDisputes";
+import AdminSettings from "../pages/admin/AdminSettings";
 
 const router = createBrowserRouter([
   // PUBLIC ROUTES
@@ -85,9 +90,17 @@ const router = createBrowserRouter([
     path: "/admin",
     element: (
       <ProtectedRoute allowedRoles={["admin"]}>
-        <AdminSidebar />
+        <AdminLayout />
       </ProtectedRoute>
-    ),
+    ), children: [
+      {index: true, element: <AdminDashboard />},
+      {path: "users", element: <AdminUsers />},
+      {path: "listings", element: <AdminListings />},
+      {path: "financials", element: <AdminFinancials />},
+      {path: "messages", element: <AdminMessages />},
+      {path: "disputes", element: <AdminDisputes />},
+      {path: "settings", element: <AdminSettings />},
+    ]
   },
 ]);
 

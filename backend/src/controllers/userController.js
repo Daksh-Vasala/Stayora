@@ -2,6 +2,7 @@ const User = require("../models/userModel.js");
 const bcrypt = require("bcrypt");
 const sendTemplateMail = require("../utils/mailUtil.js");
 const { sendToken } = require("../utils/jwt.js");
+const crypto = require("crypto");
 
 const register = async (req, res) => {
   try {
@@ -118,4 +119,87 @@ const me = async (req, res) => {
   }
 };
 
-module.exports = { register, login, logout, me };
+const forgotPassword = async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    const user = User.findOne({ email });
+
+    if (!user) {
+      return res.status(400).json({
+        message: "If email exists, reset link sent",
+      });
+    }
+
+    const resetToken = crypto.randomBytes(32).toString("hex");
+
+    const hashedToken = crypto
+      .createHash("sha256")
+      .update(resetToken)
+      .digest("hex");
+
+    user.resetPasswordToken = hashedToken;
+    user.resetPasswordExpire = Date.now() + 10 * 60 * 1000;
+
+    await user.save();
+
+    const resetURL = `http://localhost:5173/reset-password/${resetToken}`;
+
+    await transporter.sendMail({
+      to: user.email,
+      subject: "Password Reset Request",
+      html: `
+        <h3>Password Reset</h3>
+        <p>You requested to reset your password.</p>
+        <p>Click the link below to reset:</p>
+        <a href="${resetURL}">${resetURL}</a>
+        <p>This link will expire in 10 minutes.</p>
+      `,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({
+      message: error.message || "Internal server error",
+    });
+  }
+};
+
+const resetPassword = async (req, res) => {
+  try {
+    const { token } = req.params;
+    const { password } = req.body;
+
+    const hashedToken = crypto.createHash("sha256").update(token).digest("hex");
+
+    const user = await User.findOne({
+      resetPasswordToken: hashedToken,
+      resetPasswordExpire: { $gt: Date.now() },
+    });
+
+    if(!user){
+      return res.status(400).json({
+        message: "Invalid or expired token",
+      });
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    user.password = hashedPassword;
+
+    user.resetPasswordToken = undefined;
+    user.resetPasswordExpire = undefined;
+
+    await user.save();
+
+    res.status(200).json({
+      message: "Password reset successful"
+    })
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({
+      message: error.message || "Internal server error"
+    })
+  }
+}
+
+module.exports = { register, login, logout, me, forgotPassword, resetPassword };
