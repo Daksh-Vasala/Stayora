@@ -25,12 +25,18 @@ import AdminFinancials from "../pages/admin/AdminFinancials";
 import AdminMessages from "../pages/admin/AdminMessages";
 import AdminDisputes from "../pages/admin/AdminDisputes";
 import AdminSettings from "../pages/admin/AdminSettings";
+import ForgotPassword from "../pages/ForgotPassword";
+import ResetPassword from "../pages/ResetPassword";
 
 const router = createBrowserRouter([
   // PUBLIC ROUTES
   { path: "/login", element: <Login /> },
 
   { path: "/register", element: <Signup /> },
+
+  { path: "/forgot-password", element: <ForgotPassword />},
+
+  { path: "/reset-password/:token", element: <ResetPassword />},
 
   // USER ROUTES WITH NAVBAR
   {

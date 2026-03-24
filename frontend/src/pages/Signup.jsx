@@ -179,15 +179,6 @@ export default function Signup() {
               }
             />
 
-            <div className="text-right">
-              <Link
-                to="/forgot-password"
-                className="text-xs text-blue-600 hover:underline"
-              >
-                Forgot password?
-              </Link>
-            </div>
-
             <button
               type="submit"
               className={`w-full mt-4 bg-blue-600 text-white py-3 rounded-xl hover:bg-blue-700 transition-colors shadow-sm ${loading && "opacity-70"}`}
@@ -216,7 +207,7 @@ export default function Signup() {
           <p className="text-sm mt-6 text-center text-slate-600">
             Already have an account?{" "}
             <Link
-              to="/"
+              to="/login"
               className="text-blue-600 font-semibold hover:underline"
             >
               Login

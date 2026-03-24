@@ -123,10 +123,10 @@ const forgotPassword = async (req, res) => {
   try {
     const { email } = req.body;
 
-    const user = User.findOne({ email });
+    const user = await User.findOne({ email });
 
     if (!user) {
-      return res.status(400).json({
+      return res.status(200).json({
         message: "If email exists, reset link sent",
       });
     }
@@ -145,17 +145,27 @@ const forgotPassword = async (req, res) => {
 
     const resetURL = `http://localhost:5173/reset-password/${resetToken}`;
 
-    await transporter.sendMail({
-      to: user.email,
-      subject: "Password Reset Request",
-      html: `
-        <h3>Password Reset</h3>
-        <p>You requested to reset your password.</p>
-        <p>Click the link below to reset:</p>
-        <a href="${resetURL}">${resetURL}</a>
-        <p>This link will expire in 10 minutes.</p>
-      `,
+    try {
+      await sendTemplateMail(
+        user.email,
+        "Password Reset Request",
+        "resetPassword.html",
+        { resetURL }
+      );
+    } catch (err) {
+      user.resetPasswordToken = undefined;
+      user.resetPasswordExpire = undefined;
+      await user.save();
+
+      return res.status(500).json({
+        message: "Email could not be sent",
+      });
+    }
+
+    res.status(200).json({
+      message: "If email exists, reset link sent",
     });
+
   } catch (error) {
     console.log(error);
     res.status(500).json({
