@@ -8,11 +8,13 @@ import {
   MoreHorizontal,
   Home,
 } from "lucide-react";
+import { socket } from "../../socket";
+import { useAuth } from "../../context/AuthContext";
+import axios from "axios";
 
 // ══════════════════════════════════════════════════════════════════════════════
 //  SHARED DATA
 // ══════════════════════════════════════════════════════════════════════════════
-
 
 const CONVOS = [
   {
@@ -409,6 +411,10 @@ export function GuestMessagesPage() {
   const [convos, setConvos] = useState(CONVOS);
   const [activeId, setActiveId] = useState(null);
   const [showChat, setShowChat] = useState(false);
+  const [messages, setMessages] = useState([]);
+  const [receiverId, setReceiverId] = useState("");
+  const [message, setMessage] = useState("");
+  const { user } = useAuth();
 
   const active = convos.find((c) => c.id === activeId) ?? null;
 
@@ -418,8 +424,100 @@ export function GuestMessagesPage() {
     setShowChat(true);
   };
 
+  useEffect(() => {
+    if (!user?.id) return;
+
+    // connect + register
+    socket.on("connect", () => {
+      socket.emit("register", user.id);
+    });
+
+    // receive message
+    socket.on("receiveMessage", (data) => {
+      setMessages((prev) => {
+        // Remove temp message if exists
+        const filtered = prev.filter(
+          (msg) => !msg._id.startsWith("temp-") || msg.message !== data.message,
+        );
+        // Add the real message
+        return [...filtered, data];
+      });
+    });
+
+    return () => {
+      socket.off("connect");
+      socket.off("receiveMessage");
+    };
+  }, [user.id]);
+
+  // fetch messages when receiver changes
+  useEffect(() => {
+    if (!receiverId) return;
+
+    const fetchMessages = async () => {
+      const res = await axios.get(`/messages/${user.id}/${receiverId}`);
+      setMessages(res.data.messages); // ✅ FIXED
+    };
+
+    fetchMessages();
+
+    // mark as read
+    axios.post("/messages/mark-read", {
+      sender: receiverId,
+      receiver: user.id,
+    });
+  }, [receiverId, user.id]);
+
+  // send message
+  const sendTestMessage = () => {
+    if (!message.trim()) return;
+
+    const tempMsg = {
+      _id: `temp-${Date.now()}`,
+      sender: user.id,
+      receiver: receiverId,
+      message: message.trim(),
+      createdAt: new Date().toISOString(),
+      isRead: false,
+    };
+
+    // Optimistically add to UI
+    setMessages((prev) => [...prev, tempMsg]);
+
+    socket.emit("sendMessage", {
+      sender: user.id,
+      receiver: receiverId,
+      message: message.trim(),
+    });
+
+    setMessage("");
+  };
+
   return (
     <div className="h-[calc(100vh-64px)] flex overflow-hidden bg-white border border-gray-100 rounded-2xl shadow-sm">
+      <div>
+        <h3>Logged in as: {user.id}</h3>
+
+        <input
+          placeholder="Enter receiver ID"
+          value={receiverId}
+          onChange={(e) => setReceiverId(e.target.value)}
+        />
+
+        <input
+          placeholder="Enter message"
+          value={message}
+          onChange={(e) => setMessage(e.target.value)}
+        />
+
+        <button onClick={sendTestMessage}>Send</button>
+
+        <div>
+          {Array.isArray(messages)
+            ? messages.map((msg, i) => <p key={i}>{msg.message}</p>)
+            : "Not an array"}
+        </div>
+      </div>
       <div
         className={`w-full md:w-72 lg:w-80 shrink-0 border-r border-gray-100 ${showChat ? "hidden md:block" : "block"}`}
       >

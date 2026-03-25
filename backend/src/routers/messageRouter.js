@@ -2,15 +2,15 @@ const express = require("express");
 const router = express.Router();
 
 const {
-  sendMessage,
   getMessages,
-  deleteMessage
+  getUnreadCount,
+  markAsRead,
 } = require("../controllers/messageController");
 
 const authMiddleware = require("../middlewares/authMiddleware");
 
-router.post("/", authMiddleware, sendMessage);
-router.get("/", authMiddleware, getMessages);
-router.delete("/:id", authMiddleware, deleteMessage);
+router.get("/:senderId/:receiverId", authMiddleware, getMessages);
+router.get("/unread/:userId", authMiddleware, getUnreadCount);
+router.post("/mark-read", authMiddleware, markAsRead);
 
 module.exports = router;

@@ -34,6 +34,4 @@ app.use("/reviews", reviewRouter);
 app.use("/messages", messageRouter);
 app.use("/payments", paymentRouter);
 
-app.listen(PORT, () => {
-  console.log(`Server started at port ${PORT}`);
-});
+module.exports = app;

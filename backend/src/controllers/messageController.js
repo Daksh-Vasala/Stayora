@@ -1,59 +1,62 @@
 const Message = require("../models/messageModel");
 
-// SEND MESSAGE
-exports.sendMessage = async (req, res) => {
-  try {
-
-    const message = await Message.create({
-      ...req.body,
-      sender: req.user.id
-    });
-
-    res.status(201).json({
-      success: true,
-      data: message
-    });
-
-  } catch (error) {
-    console.log(error);
-    res.status(500).json({ message: error.message });
-  }
-};
-
-
 // GET MESSAGES
-exports.getMessages = async (req, res) => {
+const getMessages = async (req, res) => {
+  const { senderId, receiverId } = req.params;
   try {
+    const messages = await Message.find({
+      $or: [
+        { sender: senderId, receiver: receiverId },
+        { sender: receiverId, receiver: senderId },
+      ],
+    }).sort({ createdAt: 1 });
 
-    const messages = await Message.find()
-      .populate("sender")
-      .populate("receiver");
-
-    res.json({
+    res.status(200).json({
       success: true,
-      data: messages
+      messages,
     });
-
   } catch (error) {
     console.log(error);
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ message: error.message || "Internal server error" });
   }
 };
 
-
-// DELETE MESSAGE
-exports.deleteMessage = async (req, res) => {
+// GET UNREAD COUNT
+const getUnreadCount = async (req, res) => {
+  const { userId } = req.params;
   try {
-
-    await Message.findByIdAndDelete(req.params.id);
-
-    res.json({
-      success: true,
-      message: "Message deleted"
+    const count = await Message.countDocuments({
+      receiver: userId,
+      isRead: false,
     });
 
+    res.status(200).json({
+      data: count,
+    });
   } catch (error) {
     console.log(error);
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ message: error.message || "Internal server error" });
   }
 };
+
+// MARK AS READ
+const markAsRead = async (req, res) => {
+  const { senderId, receiverId } = req.body;
+  try {
+    await Message.updateMany(
+      {
+        sender: senderId,
+        receiver: receiverId,
+        isRead: false,
+      },
+      { isRead: true },
+    );
+
+    res.status(200).json({ message: "Marked as read" });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: error.message || "Internal server error" });
+  }
+};
+
+module.exports = { getMessages, getUnreadCount, markAsRead };
