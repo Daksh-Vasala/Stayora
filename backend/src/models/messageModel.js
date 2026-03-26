@@ -31,8 +31,10 @@ const messageSchema = new Schema(
       default: false,
     },
 
-    conversationId: {
-      type: String,
+    chat: {
+      type: Schema.Types.ObjectId,
+      required: true,
+      ref:"Chat"
     },
   },
   { timestamps: true }

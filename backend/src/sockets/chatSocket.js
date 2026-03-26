@@ -1,33 +1,36 @@
-const messageSchema = require("../models/messageModel");
+const Message = require("../models/messageModel");
+const findOrCreateChat = require("../utils/findOrCreateChat");
+const Chat = require("../models/chatModel");
 
 const chatSocket = (io) => {
-  const users = {};
   io.on("connection", (socket) => {
     console.log("✅ User connected:", socket.id);
 
     // Register user
     socket.on("register", (userId) => {
-      users[userId] = socket.id;
-      console.log("User: ", users);
+      socket.join(userId)
     });
 
-    socket.on("sendMessage", async ({ sender, receiver, message }) => {
+    socket.on("sendMessage", async ({ sender, receiver, message, property }) => {
       try {
         console.log("📩", sender, "→", receiver, ":", message);
+        const chat = await findOrCreateChat(sender, receiver, property);
 
-        const newMessage = await messageSchema.create({
+        const newMessage = await Message.create({
+          chat: chat._id,
           sender,
           receiver,
           message,
+          property
         });
 
-        const receiverSocketId = users[receiver];
+        await Chat.findByIdAndUpdate(chat._id, {
+          lastMessage: newMessage._id,
+          updatedAt: new Date(),
+        });
 
-        if (receiverSocketId) {
-          io.to(receiverSocketId).emit("receiveMessage", newMessage);
-
-          socket.emit("receiveMessage", newMessage);
-        }
+        io.to(receiver).emit("receiveMessage", newMessage);
+        io.to(sender).emit("receiveMessage", newMessage);
       } catch (error) {
         console.log(error);
       }
@@ -35,13 +38,6 @@ const chatSocket = (io) => {
 
     socket.on("disconnect", () => {
       console.log("❌ User disconnected:", socket.id);
-
-      for (let userId in users) {
-        if (users[userId] === socket.id) {
-          delete users[userId];
-          break;
-        }
-      }
     });
   });
 };

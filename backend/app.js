@@ -26,6 +26,7 @@ const bookingRouter = require("./src/routers/bookingRouter.js");
 const reviewRouter = require("./src/routers/reviewRouter.js");
 const messageRouter = require("./src/routers/messageRouter.js");
 const paymentRouter = require("./src/routers/paymentRouter.js");
+const chatRouter = require("./src/routers/chatRouter.js");
 
 app.use("/user", userRouter);
 app.use("/property", propertyRouter);
@@ -33,5 +34,6 @@ app.use("/bookings", bookingRouter);
 app.use("/reviews", reviewRouter);
 app.use("/messages", messageRouter);
 app.use("/payments", paymentRouter);
+app.use("/chats", chatRouter);
 
 module.exports = app;

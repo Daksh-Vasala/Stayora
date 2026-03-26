@@ -12,7 +12,7 @@ import BookingsPage from "../pages/host/BookingsPage";
 import EarningsPage from "../pages/host/EarningsPage";
 import GuestBookingsPages from "../pages/guest/GuestBookingsPage";
 import WishlistPage from "../pages/guest/WishlistPage";
-import { GuestMessagesPage } from "../pages/guest/GuestMessagesPage";
+import MessagesPage  from "../pages/guest/MessagesPage";
 import AddListingPage from "../pages/host/AddListingPage";
 import ListingDetailPage from "../pages/host/ListingDetailPage";
 import UpdateListingPage from "../pages/host/UpdateListingPage";
@@ -65,7 +65,7 @@ const router = createBrowserRouter([
         path: "messages",
         element: (
           <ProtectedRoute allowedRoles={["guest", "host"]}>
-            <GuestMessagesPage />
+            <MessagesPage />
           </ProtectedRoute>
         ),
       },

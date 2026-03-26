@@ -9,8 +9,8 @@ const {
 
 const authMiddleware = require("../middlewares/authMiddleware");
 
-router.get("/:senderId/:receiverId", authMiddleware, getMessages);
 router.get("/unread/:userId", authMiddleware, getUnreadCount);
+router.get("/:chatId", authMiddleware, getMessages);
 router.post("/mark-read", authMiddleware, markAsRead);
 
 module.exports = router;
