@@ -68,6 +68,22 @@ const getAllProperties = async (req, res) => {
   }
 };
 
+const getAllPropertiesForAdmin = async (req, res) => {
+  try {
+    const properties = await Property.find().populate(
+      "host",
+      "name email",
+    );
+    res.status(200).json({
+      message: "Properties fetched",
+      data: properties,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
 const getPropertyById = async (req, res) => {
   try {
     const property = await Property.findById(req.params.id).populate(
@@ -207,4 +223,5 @@ module.exports = {
   updateProperty,
   getPropertiesOfHost,
   toggleStatus,
+  getAllPropertiesForAdmin
 };

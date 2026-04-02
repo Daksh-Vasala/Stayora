@@ -63,7 +63,7 @@ export default function AdminSettings() {
   };
 
   return (
-    <div className="p-6 space-y-5 max-w-2xl">
+    <div className="p-6 space-y-5 ">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-xl font-bold text-gray-900">Settings</h1>
