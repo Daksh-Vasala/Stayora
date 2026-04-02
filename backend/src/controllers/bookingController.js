@@ -124,7 +124,7 @@ const updateBooking = async (req, res) => {
     if (!booking) {
       return res.status(404).json({ message: "Booking not found" });
     }
-
+    
     const updatedBooking = await Booking.findByIdAndUpdate(
       req.params.id,
       req.body,
@@ -136,6 +136,28 @@ const updateBooking = async (req, res) => {
     res.json({
       success: true,
       data: updatedBooking,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: error.message || "Internal server error" });
+  }
+};
+
+const toggleStatus = async (req, res) => {
+  try {
+    const booking = await Booking.findById(req.params.id);
+    
+    if(!booking){
+      return res.status(404).json({ message: "Booking not found" });
+    }
+    const { status } = req.body;
+    const oldStatus = booking.status
+    booking.status = status || oldStatus;
+    await booking.save();
+
+    res.json({
+      success: true,
+      message: "Booking status updated",
     });
   } catch (error) {
     console.log(error);
@@ -164,5 +186,6 @@ module.exports = {
   getBookingById,
   getBookingsOfHost,
   deleteBooking,
-  getAllBookings
+  getAllBookings,
+  toggleStatus
 };

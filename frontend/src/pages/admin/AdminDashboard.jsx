@@ -10,6 +10,7 @@ import {
   Clock,
   XCircle,
 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 const STATS = [
   {
@@ -92,6 +93,7 @@ const STATUS = {
 };
 
 export default function AdminDashboard() {
+  const navigate = useNavigate();
   return (
     <div className="p-6 space-y-6">
       {/* Page header */}
@@ -130,7 +132,7 @@ export default function AdminDashboard() {
       <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
         <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
           <h3 className="text-sm font-bold text-gray-900">Recent Bookings</h3>
-          <button className="text-xs font-semibold text-blue-600 hover:underline border-none bg-transparent cursor-pointer">
+          <button onClick={() => navigate("/admin/bookings")} className="text-xs font-semibold text-blue-600 hover:underline border-none bg-transparent cursor-pointer">
             View all
           </button>
         </div>

@@ -11,7 +11,6 @@ import ListingsPage from "../pages/host/ListingsPage";
 import BookingsPage from "../pages/host/BookingsPage";
 import EarningsPage from "../pages/host/EarningsPage";
 import GuestBookingsPages from "../pages/guest/GuestBookingsPage";
-import WishlistPage from "../pages/guest/WishlistPage";
 import MessagesPage  from "../pages/guest/MessagesPage";
 import AddListingPage from "../pages/host/AddListingPage";
 import ListingDetailPage from "../pages/host/ListingDetailPage";
@@ -28,6 +27,7 @@ import AdminSettings from "../pages/admin/AdminSettings";
 import ForgotPassword from "../pages/ForgotPassword";
 import ResetPassword from "../pages/ResetPassword";
 import AdminBookings from "../pages/admin/AdminBookings";
+import AdminBookingDetail from "../pages/admin/AdminBookingDetail";
 
 const router = createBrowserRouter([
   // PUBLIC ROUTES
@@ -96,6 +96,7 @@ const router = createBrowserRouter([
       {path: "users", element: <AdminUsers />},
       {path: "listings", element: <AdminListings />},
       {path: "bookings", element: <AdminBookings />},
+      {path: "bookings/:id", element: <AdminBookingDetail />},
       {path: "financials", element: <AdminFinancials />},
       {path: "messages", element: <AdminMessages />},
       {path: "disputes", element: <AdminDisputes />},

@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Search, MapPin, Calendar, Users, CheckCircle, Clock, XCircle, Eye, Loader2 } from "lucide-react";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
 const TABS = ["all", "confirmed", "pending", "cancelled"];
 
@@ -19,6 +20,7 @@ export default function AdminBookings() {
   const [loading,  setLoading]  = useState(true);
   const [tab,      setTab]      = useState("all");
   const [q,        setQ]        = useState("");
+  const navigate = useNavigate();
 
   // ── Fetch from API ──────────────────────────────────────────────────────────
   useEffect(() => {
@@ -153,7 +155,7 @@ export default function AdminBookings() {
                     </span>
 
                     {/* View */}
-                    <button className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-gray-100 text-gray-400 hover:text-blue-600 border-none cursor-pointer transition-colors">
+                    <button onClick={() => navigate(`/admin/bookings/${b._id}`)} className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-gray-100 text-gray-400 hover:text-blue-600 border-none cursor-pointer transition-colors">
                       <Eye size={15} />
                     </button>
                   </div>

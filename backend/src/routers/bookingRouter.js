@@ -27,6 +27,7 @@ router.put(
   adminMiddleware,
   bookingController.updateBooking,
 );
+router.patch("/:id/status", authMiddleware, adminMiddleware, bookingController.toggleStatus)
 router.delete("/:id", authMiddleware, bookingController.deleteBooking);
 
 module.exports = router;
