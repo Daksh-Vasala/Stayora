@@ -212,4 +212,26 @@ const resetPassword = async (req, res) => {
   }
 }
 
-module.exports = { register, login, logout, me, forgotPassword, resetPassword };
+const getAllUsers = async (req, res) => {
+  try {
+    const users = await User.find();
+
+    if(!users){
+      return res.status(400).json({ message: "No user found" });
+    }
+
+    res.status(200).json({
+      success: true,
+      users
+    })
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({
+      message: error.message || "Internal server error"
+    })
+  }
+}
+
+
+
+module.exports = { register, login, logout, me, forgotPassword, resetPassword, getAllUsers };

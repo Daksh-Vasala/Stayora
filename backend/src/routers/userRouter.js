@@ -5,7 +5,9 @@ const {
   me,
   forgotPassword,
   resetPassword,
+  getAllUsers,
 } = require("../controllers/userController");
+const adminMiddleware = require("../middlewares/adminMiddleware");
 const authMiddleware = require("../middlewares/authMiddleware");
 
 const router = require("express").Router();
@@ -21,5 +23,7 @@ router.get("/me", authMiddleware, me);
 router.post("/forgot-password", forgotPassword);
 
 router.post("/reset-password/:token", resetPassword);
+
+router.get("/", authMiddleware, adminMiddleware, getAllUsers);
 
 module.exports = router;
