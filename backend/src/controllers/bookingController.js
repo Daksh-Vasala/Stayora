@@ -2,7 +2,7 @@ const Booking = require("../models/bookingModel");
 const Property = require("../models/propertyModel");
 
 // CREATE BOOKING
-exports.createBooking = async (req, res) => {
+const createBooking = async (req, res) => {
   try {
     const { propertyId, checkIn, checkOut, guestsCount } = req.body;
 
@@ -55,7 +55,7 @@ exports.createBooking = async (req, res) => {
 };
 
 // GET ALL BOOKINGS
-exports.getBookingsOfHost = async (req, res) => {
+const getBookingsOfHost = async (req, res) => {
   try {
     const bookings = await Booking.find({ host: req.user.id })
       .populate("property")
@@ -70,67 +70,99 @@ exports.getBookingsOfHost = async (req, res) => {
       data: bookings,
     });
   } catch (error) {
-    console.log(error)
+    console.log(error);
     res.status(500).json({ message: error.message || "Internal server error" });
   }
 };
 
 // GET SINGLE BOOKING
-exports.getBookingById = async (req, res) => {
+const getBookingById = async (req, res) => {
   try {
     const booking = await Booking.findById(req.params.id)
-    .populate("property")
-    .populate("guest");
-    
+      .populate("property")
+      .populate("guest");
+
     if (!booking) {
       return res.status(404).json({ message: "Booking not found" });
     }
-    
+
     res.json({
       success: true,
       data: booking,
     });
   } catch (error) {
-    console.log(error)
+    console.log(error);
+    res.status(500).json({ message: error.message || "Internal server error" });
+  }
+};
+
+const getAllBookings = async (req, res) => {
+  try {
+    const booking = await Booking.find()
+      .populate("property")
+      .populate("guest");
+
+    if (!booking) {
+      return res.status(404).json({ message: "Bookings not found" });
+    }
+
+    res.json({
+      success: true,
+      data: booking,
+    });
+  } catch (error) {
+    console.log(error);
     res.status(500).json({ message: error.message || "Internal server error" });
   }
 };
 
 // UPDATE BOOKING
-exports.updateBooking = async (req, res) => {
+const updateBooking = async (req, res) => {
   try {
     const booking = await Booking.findById(req.params.id);
-    
+
     if (!booking) {
       return res.status(404).json({ message: "Booking not found" });
     }
-    
-    const updatedBooking = await Booking.findByIdAndUpdate(req.params.id, req.body, {
-      new: true,
-    });
-    
+
+    const updatedBooking = await Booking.findByIdAndUpdate(
+      req.params.id,
+      req.body,
+      {
+        new: true,
+      },
+    );
+
     res.json({
       success: true,
       data: updatedBooking,
     });
   } catch (error) {
-    
-    console.log(error)
+    console.log(error);
     res.status(500).json({ message: error.message || "Internal server error" });
   }
 };
 
 // DELETE BOOKING
-exports.deleteBooking = async (req, res) => {
+const deleteBooking = async (req, res) => {
   try {
     await Booking.findByIdAndDelete(req.params.id);
-    
+
     res.json({
       success: true,
       message: "Booking deleted",
     });
   } catch (error) {
-    console.log(error)
+    console.log(error);
     res.status(500).json({ message: error.message || "Internal server error" });
   }
+};
+
+module.exports = {
+  createBooking,
+  updateBooking,
+  getBookingById,
+  getBookingsOfHost,
+  deleteBooking,
+  getAllBookings
 };

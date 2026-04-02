@@ -27,6 +27,7 @@ import AdminDisputes from "../pages/admin/AdminDisputes";
 import AdminSettings from "../pages/admin/AdminSettings";
 import ForgotPassword from "../pages/ForgotPassword";
 import ResetPassword from "../pages/ResetPassword";
+import AdminBookings from "../pages/admin/AdminBookings";
 
 const router = createBrowserRouter([
   // PUBLIC ROUTES
@@ -102,6 +103,7 @@ const router = createBrowserRouter([
       {index: true, element: <AdminDashboard />},
       {path: "users", element: <AdminUsers />},
       {path: "listings", element: <AdminListings />},
+      {path: "bookings", element: <AdminBookings />},
       {path: "financials", element: <AdminFinancials />},
       {path: "messages", element: <AdminMessages />},
       {path: "disputes", element: <AdminDisputes />},

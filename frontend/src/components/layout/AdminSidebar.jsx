@@ -11,13 +11,8 @@ import {
   LogOut,
   ChevronLeft,
   ChevronRight,
-  Menu,
-  Bell,
-  Search,
-  User,
   X,
-  MapPin,
-  Calendar,
+  NotepadText,
 } from "lucide-react";
 
 const AdminSidebar = ({ onLogout }) => {
@@ -31,6 +26,7 @@ const AdminSidebar = ({ onLogout }) => {
     const pathMap = {
       "/admin/users": "Users",
       "/admin/listings": "Listings",
+      "/admin/bookings": "Bookings",
       "/admin/financials": "Financials",
       "/admin/disputes": "Disputes",
       "/admin/messages": "Messages",
@@ -44,6 +40,7 @@ const AdminSidebar = ({ onLogout }) => {
     { name: "Dashboard", icon: LayoutDashboard, path: "/admin" },
     { name: "Users", icon: Users, path: "/admin/users" },
     { name: "Listings", icon: Home, path: "/admin/listings" },
+    { name: "Bookings", icon: NotepadText, path: "/admin/bookings" },
     { name: "Financials", icon: DollarSign, path: "/admin/financials" },
     { name: "Disputes", icon: ShieldAlert, path: "/admin/disputes" },
     { name: "Messages", icon: MessageSquare, path: "/admin/messages" },
@@ -128,9 +125,9 @@ const AdminSidebar = ({ onLogout }) => {
                 {!isCollapsed && (
                   <span className="ml-3 whitespace-nowrap">{item.name}</span>
                 )}
-                {activeTab === item.name && !isCollapsed && (
+                {/* {activeTab === item.name && !isCollapsed && (
                   <div className="ml-auto w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
-                )}
+                )} */}
               </button>
             ))}
           </nav>
