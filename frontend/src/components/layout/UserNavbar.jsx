@@ -27,7 +27,6 @@ function UserNavbar({ userRole, onLogout }) {
 
   const guestLinks = [
     { label: "Explore", icon: Compass, path: "/" },
-    { label: "Wishlist", icon: Heart, path: "/wishlist" },
     { label: "My Bookings", icon: BookOpen, path: "/bookings" },
     { label: "Messages", icon: MessageCircle, path: "/messages" },
   ];

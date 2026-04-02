@@ -55,14 +55,6 @@ const router = createBrowserRouter([
         ),
       },
       {
-        path: "wishlist",
-        element: (
-          <ProtectedRoute allowedRoles={["guest", "host"]}>
-            <WishlistPage />
-          </ProtectedRoute>
-        ),
-      },
-      {
         path: "messages",
         element: (
           <ProtectedRoute allowedRoles={["guest", "host"]}>
