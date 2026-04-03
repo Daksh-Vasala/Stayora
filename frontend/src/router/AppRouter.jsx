@@ -23,11 +23,11 @@ import AdminListings from "../pages/admin/AdminListings";
 import AdminFinancials from "../pages/admin/AdminFinancials";
 import AdminMessages from "../pages/admin/AdminMessages";
 import AdminDisputes from "../pages/admin/AdminDisputes";
-import AdminSettings from "../pages/admin/AdminSettings";
 import ForgotPassword from "../pages/ForgotPassword";
 import ResetPassword from "../pages/ResetPassword";
 import AdminBookings from "../pages/admin/AdminBookings";
 import AdminBookingDetail from "../pages/admin/AdminBookingDetail";
+import AdminPropertyDetail from "../pages/admin/AdminPropertyDetail";
 
 const router = createBrowserRouter([
   // PUBLIC ROUTES
@@ -95,12 +95,12 @@ const router = createBrowserRouter([
       {index: true, element: <AdminDashboard />},
       {path: "users", element: <AdminUsers />},
       {path: "listings", element: <AdminListings />},
+      {path: "listings/:id", element: <AdminPropertyDetail />},
       {path: "bookings", element: <AdminBookings />},
       {path: "bookings/:id", element: <AdminBookingDetail />},
       {path: "financials", element: <AdminFinancials />},
       {path: "messages", element: <AdminMessages />},
       {path: "disputes", element: <AdminDisputes />},
-      {path: "settings", element: <AdminSettings />},
     ]
   },
 ]);

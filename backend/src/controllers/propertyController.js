@@ -54,7 +54,7 @@ const createProperty = async (req, res) => {
 
 const getAllProperties = async (req, res) => {
   try {
-    const properties = await Property.find({ status: "active" }).populate(
+    const properties = await Property.find({ status: "active", isDeleted: false }).populate(
       "host",
       "name email",
     );
@@ -108,17 +108,33 @@ const getPropertyById = async (req, res) => {
 };
 
 const updateProperty = async (req, res) => {
-  const { existingImages, deletedImages } = req.body;
+  const { existingImages, deletedImages, ...rest } = req.body;
 
   const parsedExisting = JSON.parse(existingImages || "[]");
   const parsedDeleted = JSON.parse(deletedImages || "[]");
 
-  // 1. 🔥 Delete removed images from Cloudinary
-  for (const public_id of parsedDeleted) {
-    await uploadToCloudinary.uploader.destroy(public_id);
+  // 🔥 0. Get property first (needed for rules)
+  const property = await Property.findById(req.params.id);
+  if (!property) {
+    return res.status(404).json({ message: "Property not found" });
   }
 
-  // 2. 🔥 Upload new images (multer files)
+  // 🔥 1. ROLE-BASED FIELD CONTROL
+  const allowedUpdates = { ...rest };
+
+  // ❌ Block sensitive fields from host
+  if (req.user.role === "host") {
+    delete allowedUpdates.status;
+    delete allowedUpdates.approvalStatus;
+    delete allowedUpdates.isDeleted;
+  }
+
+  // 🔥 2. Delete removed images
+  for (const public_id of parsedDeleted) {
+    await cloudinary.uploader.destroy(public_id);
+  }
+
+  // 🔥 3. Upload new images
   const uploaded = [];
   if (req.files?.length) {
     for (const file of req.files) {
@@ -130,37 +146,83 @@ const updateProperty = async (req, res) => {
     }
   }
 
-  // 3. 🔥 Final images array
+  // 🔥 4. Final images array
   const finalImages = [...parsedExisting, ...uploaded];
 
-  // 4. Update DB
+  // 🔥 5. Business Rule: If host edits AFTER approval → make it pending again (optional but recommended)
+  if (req.user.role === "host" && property.approvalStatus === "approved") {
+    allowedUpdates.approvalStatus = "pending";
+    allowedUpdates.status = "inactive";
+  }
+
+  // 🔥 6. Update DB safely
   const updated = await Property.findByIdAndUpdate(
     req.params.id,
     {
-      ...req.body,
+      ...allowedUpdates,
       images: finalImages,
     },
-    { new: true },
+    { new: true }
   );
 
   res.json({ success: true, data: updated });
 };
 
+const approveProperty = async (req, res) => {
+  try {
+    const property = await Property.findOne({ _id: req.params.id, isDeleted: false });
+
+    if(!property){
+      return res.status(400).json({message: "Property not found"});
+    }
+
+    property.approvalStatus = "approved";
+    await property.save();
+    res.status(200).json({
+      message: "Property approved"
+    })
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({
+      message: error.message || "Internal server error"
+    })
+  }
+}
+
+const rejectProperty = async (req, res) => {
+  try {
+    const property = await Property.findOne({ _id: req.params.id, isDeleted: false });
+
+    if(!property){
+      return res.status(400).json({message: "Property not found"});
+    }
+
+    property.approvalStatus = "rejected";
+    property.status = "inactive";
+    await property.save();
+    res.status(200).json({
+      message: "Property rejected"
+    })
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({
+      message: error.message || "Internal server error"
+    })
+  }
+}
+
 const deleteProperty = async (req, res) => {
   try {
-    const property = await Property.findByIdAndDelete(req.params.id);
+    const property = await Property.findById(req.params.id);
 
     if (!property) {
       return res.status(404).json({
         message: "Property not found",
       });
     }
-    // Only admin allowed
-    if (req.user.role !== "admin") {
-      return res.status(403).json({ message: "Only admin can delete" });
-    }
 
-    property.status = "deleted";
+    property.isDeleted = true;
+    property.status = "inactive";
     await property.save();
 
     res.status(200).json({
@@ -168,7 +230,7 @@ const deleteProperty = async (req, res) => {
     });
   } catch (error) {
     console.log(error);
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ message: error.message || "Internal server error" });
   }
 };
 
@@ -176,7 +238,7 @@ const getPropertiesOfHost = async (req, res) => {
   try {
     const properties = await Property.find({
       host: req.user.id,
-      status: { $ne: "deleted" },
+      isDeleted: false,
     });
 
     res.status(200).json({
@@ -198,7 +260,7 @@ const toggleStatus = async (req, res) => {
       return res.status(404).json({ message: "Property not found" });
     }
 
-    if (req.user.id !== property.host.toString()) {
+    if (req.user.role !== 'admin' && req.user.id !== property.host.toString()) {
       return res.status(403).json({ message: "Not authorized" });
     }
 
@@ -206,12 +268,12 @@ const toggleStatus = async (req, res) => {
     await property.save();
 
     res.status(200).json({
-      message: "Property deactivated",
+      message: "Property status toggled",
       data: property,
     });
   } catch (error) {
     console.log(error);
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ message: error.message || "Internal server error" });
   }
 };
 
@@ -223,5 +285,7 @@ module.exports = {
   updateProperty,
   getPropertiesOfHost,
   toggleStatus,
-  getAllPropertiesForAdmin
+  getAllPropertiesForAdmin,
+  approveProperty,
+  rejectProperty,
 };

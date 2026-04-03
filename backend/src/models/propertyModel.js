@@ -27,11 +27,8 @@ const propertySchema = new Schema(
     },
 
     maxGuests: Number,
-
     bedrooms: Number,
-
     bathrooms: Number,
-
     beds: Number,
 
     amenities: [String],
@@ -55,8 +52,19 @@ const propertySchema = new Schema(
 
     status: {
       type: String,
-      enum: ["active", "inactive", "deleted"],
-      default: "active",
+      enum: ["active", "inactive"],
+      default: "inactive",
+    },
+
+    approvalStatus: {
+      type: String,
+      enum: ["pending", "approved", "rejected"],
+      default: "pending",
+    },
+
+    isDeleted: {
+      type: Boolean,
+      default: false,
     },
 
     host: {
@@ -65,7 +73,7 @@ const propertySchema = new Schema(
       ref: "User",
     },
   },
-  { timestamps: true },
+  { timestamps: true }
 );
 
 module.exports = mongoose.model("Property", propertySchema);

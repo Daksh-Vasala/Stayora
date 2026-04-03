@@ -44,7 +44,6 @@ const AdminSidebar = ({ onLogout }) => {
     { name: "Financials", icon: DollarSign, path: "/admin/financials" },
     { name: "Disputes", icon: ShieldAlert, path: "/admin/disputes" },
     { name: "Messages", icon: MessageSquare, path: "/admin/messages" },
-    { name: "Settings", icon: Settings, path: "/admin/settings" },
   ];
 
   // Close sidebar when clicking outside on mobile

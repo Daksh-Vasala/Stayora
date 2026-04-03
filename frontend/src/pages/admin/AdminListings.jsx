@@ -3,24 +3,29 @@ import { useState, useEffect, useMemo, useCallback } from "react";
 import axios from "axios";
 import { Search } from "lucide-react";
 import AdminPropertyCard from "../../components/property/AdminPropertyCard";
+import { useNavigate } from "react-router-dom";
 
 export default function AdminListings() {
   const [q, setQ] = useState("");
   const [filter, setFilter] = useState("all");
   const [listings, setListings] = useState([]);
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
+
+   const fetchData = async () => {
+    setLoading(true);
+    try {
+      const res = await axios.get("/property/admin");
+      setListings(res.data.data);
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setLoading(false);
+    }
+   }
 
   useEffect(() => {
-    axios
-      .get("/property/admin")
-      .then((res) => {
-        setListings(res.data.data);
-        setLoading(false);
-      })
-      .catch((err) => {
-        console.error(err);
-        setLoading(false);
-      });
+   fetchData();
   }, []);
 
   const filteredListings = useMemo(() => {
@@ -36,16 +41,15 @@ export default function AdminListings() {
 
   const handleView = useCallback((id) => {
     console.log("View property:", id);
-    // Navigate to property details
-    // navigate(`/properties/${id}`);
+    navigate(`/admin/listings/${id}`)
   }, []);
 
   const handleDelete = useCallback(async (id) => {
     if (!confirm("Are you sure you want to delete this property?")) return;
     
     try {
-      await axios.delete(`/property/admin/${id}`);
-      setListings(prev => prev.filter(l => l._id !== id));
+      await axios.patch(`/property/delete/${id}`);
+      fetchData();
     } catch (err) {
       console.error("Delete failed:", err);
       alert("Failed to delete property");

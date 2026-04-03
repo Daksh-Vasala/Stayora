@@ -32,11 +32,12 @@ function ListingsPage() {
       console.log(error);
     }
   };
+  
   const handleSoftDelete = async (id) => {
     try {
       const isConfirm = window.confirm("Do you want to delete this?");
       if (isConfirm) {
-        await axios.patch(`/property/deactivate/${id}`, { status: "deleted" });
+        await axios.patch(`/property/delete/${id}`);
         getData();
         navigate("/host/listings");
       }

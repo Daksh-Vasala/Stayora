@@ -129,8 +129,12 @@ export default function ListingDetailPage() {
 
   const handleSoftDelete = async () => {
     try {
-      await axios.patch(`/property/deactivate/${id}`, { status: "inactive" });
-      navigate("/host/listings");
+      const isConfirm = window.confirm("Do you want to delete this?");
+      if (isConfirm) {
+        console.log(id);
+        await axios.patch(`/property/delete/${id}`);
+        navigate("/host/listings");
+      }
     } catch (err) {
       console.error(err);
     }
