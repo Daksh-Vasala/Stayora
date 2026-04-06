@@ -33,7 +33,7 @@ const bookingSchema = new Schema(
         validator: function (value) {
           return value > this.checkIn;
         },
-        message: "Check-out date must be after check-in date",
+        message: "Check-out must be after check-in",
       },
     },
 
@@ -47,13 +47,39 @@ const bookingSchema = new Schema(
       required: true,
     },
 
+    // 🔷 Booking status
     status: {
       type: String,
       enum: ["pending", "confirmed", "cancelled", "completed"],
       default: "pending",
     },
+
+    // 🔷 Payment status
+    paymentStatus: {
+      type: String,
+      enum: ["unpaid", "paid", "failed", "refunded"],
+      default: "unpaid",
+    },
+
+    // 🔷 Payment gateway reference
+    paymentId: {
+      type: String,
+    },
+
+    // 🔷 Expiration for pending bookings
+    expiresAt: {
+      type: Date,
+      default: function () {
+        return new Date(Date.now() + 15 * 60 * 1000); // 15 min
+      },
+    },
+
+    // 🔷 Cancellation reason
+    cancellationReason: {
+      type: String,
+    },
   },
-  { timestamps: true },
+  { timestamps: true }
 );
 
 module.exports = mongoose.model("Booking", bookingSchema);

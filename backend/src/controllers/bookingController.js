@@ -180,6 +180,23 @@ const deleteBooking = async (req, res) => {
   }
 };
 
+const getBookingOfUser = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const bookings = await Booking.find({
+      guest: id
+    })
+     res.json({
+      message: "Bookings fetched"
+     })
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({
+      message: error.message || "Internal server error"
+    })
+  }
+}
+
 module.exports = {
   createBooking,
   updateBooking,
@@ -187,5 +204,6 @@ module.exports = {
   getBookingsOfHost,
   deleteBooking,
   getAllBookings,
-  toggleStatus
+  toggleStatus,
+  getBookingOfUser
 };

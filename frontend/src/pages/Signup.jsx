@@ -8,8 +8,10 @@ import LeftPanel from "../components/layout/LeftPanel";
 import { useState } from "react";
 import axios from "axios";
 import { toast } from "react-toastify";
+import { useAuth } from "../context/AuthContext";
 
 export default function Signup() {
+  const { getUser } = useAuth()
   const [role, setRole] = useState("guest");
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -33,6 +35,7 @@ export default function Signup() {
         userData.role = "host";
       }
       const res = await axios.post("/user/register", userData);
+      getUser()
       console.log(res.data);
       toast.success(res.data.message);
       navigate("/");

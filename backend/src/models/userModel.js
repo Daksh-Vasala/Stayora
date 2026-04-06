@@ -7,34 +7,42 @@ const userSchema = new Schema(
       type: String,
       required: true,
     },
+
     email: {
       type: String,
       unique: true,
-      required: true
+      required: true,
     },
 
     password: {
       type: String,
-      rquired: true
+      rquired: true,
     },
+
     role: {
       type: String,
       enum: ["admin", "host", "guest"],
       default: "guest",
     },
+
     phone: {
       type: String,
-      unique: true
+      unique: true,
+    },
+
+    location: {
+      type: String,
+      default: "",
     },
 
     profilePic: String,
 
     resetPasswordToken: {
-      type: String
+      type: String,
     },
 
     resetPasswordExpire: {
-      type: Date
+      type: Date,
     },
 
     is_verified: {
@@ -45,6 +53,17 @@ const userSchema = new Schema(
     isActive: {
       type: Boolean,
       default: true,
+    },
+
+    verificationToken: {
+      type: String,
+      default: null,
+      index: true,
+    },
+
+    verificationExpires: {
+      type: Date,
+      default: null,
     },
   },
   { timestamps: true },

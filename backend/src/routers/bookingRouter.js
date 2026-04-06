@@ -4,8 +4,6 @@ const router = express.Router();
 const bookingController = require("../controllers/bookingController");
 
 const authMiddleware = require("../middlewares/authMiddleware");
-const hostMiddleware = require("../middlewares/hostMiddleware");
-const adminMiddleware = require("../middlewares/adminMiddleware");
 const allowedRoles = require("../middlewares/allowedRoles");
 
 router.post("/", authMiddleware, bookingController.createBooking);

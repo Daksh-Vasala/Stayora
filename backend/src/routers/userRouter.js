@@ -6,8 +6,8 @@ const {
   forgotPassword,
   resetPassword,
   getAllUsers,
+  verifyEmail,
 } = require("../controllers/userController");
-const adminMiddleware = require("../middlewares/adminMiddleware");
 const authMiddleware = require("../middlewares/authMiddleware");
 const allowedRoles = require("../middlewares/allowedRoles");
 
@@ -21,9 +21,13 @@ router.post("/logout", authMiddleware, logout);
 
 router.get("/me", authMiddleware, me);
 
+router.get("stats", authMiddleware)
+
 router.post("/forgot-password", forgotPassword);
 
 router.post("/reset-password/:token", resetPassword);
+
+router.post("/verify-email", verifyEmail)
 
 router.get("/", authMiddleware, allowedRoles("admin"), getAllUsers);
 

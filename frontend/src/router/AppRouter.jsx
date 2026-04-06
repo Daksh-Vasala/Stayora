@@ -11,7 +11,7 @@ import ListingsPage from "../pages/host/ListingsPage";
 import BookingsPage from "../pages/host/BookingsPage";
 import EarningsPage from "../pages/host/EarningsPage";
 import GuestBookingsPages from "../pages/guest/GuestBookingsPage";
-import MessagesPage  from "../pages/guest/MessagesPage";
+import MessagesPage from "../pages/MessagesPage";
 import AddListingPage from "../pages/host/AddListingPage";
 import ListingDetailPage from "../pages/host/ListingDetailPage";
 import UpdateListingPage from "../pages/host/UpdateListingPage";
@@ -28,6 +28,9 @@ import ResetPassword from "../pages/ResetPassword";
 import AdminBookings from "../pages/admin/AdminBookings";
 import AdminBookingDetail from "../pages/admin/AdminBookingDetail";
 import AdminPropertyDetail from "../pages/admin/AdminPropertyDetail";
+import GuestCheckoutPage from "../pages/guest/GuestCheckoutPage";
+import ProfilePage from "../pages/ProfilePage";
+import VerificationPage from "../pages/VerificationPage"
 
 const router = createBrowserRouter([
   // PUBLIC ROUTES
@@ -35,9 +38,9 @@ const router = createBrowserRouter([
 
   { path: "/register", element: <Signup /> },
 
-  { path: "/forgot-password", element: <ForgotPassword />},
+  { path: "/forgot-password", element: <ForgotPassword /> },
 
-  { path: "/reset-password/:token", element: <ResetPassword />},
+  { path: "/reset-password/:token", element: <ResetPassword /> },
 
   // USER ROUTES WITH NAVBAR
   {
@@ -55,11 +58,33 @@ const router = createBrowserRouter([
         ),
       },
       {
+        path: "bookings/:id",
+        element: (
+          <ProtectedRoute allowedRoles={["guest"]}>
+            <GuestCheckoutPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
         path: "messages",
         element: (
           <ProtectedRoute allowedRoles={["guest", "host"]}>
             <MessagesPage />
           </ProtectedRoute>
+        ),
+      },
+      {
+        path: "profile",
+        element: (
+          <ProtectedRoute allowedRoles={["guest", "host", "admin"]}>
+            <ProfilePage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "verify-email/:token",
+        element: (
+          <VerificationPage />
         ),
       },
     ],
@@ -91,17 +116,18 @@ const router = createBrowserRouter([
       <ProtectedRoute allowedRoles={["admin"]}>
         <AdminLayout />
       </ProtectedRoute>
-    ), children: [
-      {index: true, element: <AdminDashboard />},
-      {path: "users", element: <AdminUsers />},
-      {path: "listings", element: <AdminListings />},
-      {path: "listings/:id", element: <AdminPropertyDetail />},
-      {path: "bookings", element: <AdminBookings />},
-      {path: "bookings/:id", element: <AdminBookingDetail />},
-      {path: "financials", element: <AdminFinancials />},
-      {path: "messages", element: <AdminMessages />},
-      {path: "disputes", element: <AdminDisputes />},
-    ]
+    ),
+    children: [
+      { index: true, element: <AdminDashboard /> },
+      { path: "users", element: <AdminUsers /> },
+      { path: "listings", element: <AdminListings /> },
+      { path: "listings/:id", element: <AdminPropertyDetail /> },
+      { path: "bookings", element: <AdminBookings /> },
+      { path: "bookings/:id", element: <AdminBookingDetail /> },
+      { path: "financials", element: <AdminFinancials /> },
+      { path: "messages", element: <MessagesPage /> },
+      { path: "disputes", element: <AdminDisputes /> },
+    ],
   },
 ]);
 

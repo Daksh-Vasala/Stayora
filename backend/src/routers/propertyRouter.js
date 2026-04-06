@@ -11,8 +11,6 @@ const {
   rejectProperty,
 } = require("../controllers/propertyController");
 const authMiddleware = require("../middlewares/authMiddleware");
-const hostMiddleware = require("../middlewares/hostMiddleware");
-const adminMiddleware = require("../middlewares/adminMiddleware");
 const allowedRoles = require("../middlewares/allowedRoles");
 const upload = require("../middlewares/uploadMiddleware");
 
