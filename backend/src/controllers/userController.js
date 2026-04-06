@@ -405,5 +405,6 @@ module.exports = {
   forgotPassword,
   resetPassword,
   getAllUsers,
-  verifyEmail
+  verifyEmail,
+  resendVerification
 };

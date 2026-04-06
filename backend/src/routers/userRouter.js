@@ -7,6 +7,7 @@ const {
   resetPassword,
   getAllUsers,
   verifyEmail,
+  resendVerification,
 } = require("../controllers/userController");
 const authMiddleware = require("../middlewares/authMiddleware");
 const allowedRoles = require("../middlewares/allowedRoles");
@@ -28,6 +29,8 @@ router.post("/forgot-password", forgotPassword);
 router.post("/reset-password/:token", resetPassword);
 
 router.post("/verify-email", verifyEmail)
+
+router.post("/resend-verification", resendVerification)
 
 router.get("/", authMiddleware, allowedRoles("admin"), getAllUsers);
 
