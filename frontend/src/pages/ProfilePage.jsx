@@ -1,4 +1,4 @@
-// ProfilePage.jsx - Personal Information Only
+// ProfilePage.jsx - Updated with Resend Verification
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
@@ -14,6 +14,9 @@ import {
   Key,
   Bell,
   ChevronRight,
+  AlertCircle,
+  CheckCircle,
+  Send,
 } from "lucide-react";
 
 export default function ProfilePage() {
@@ -22,6 +25,9 @@ export default function ProfilePage() {
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState(false);
   const [formData, setFormData] = useState({});
+  const [updating, setUpdating] = useState(false);
+  const [resending, setResending] = useState(false);
+  const [resendMessage, setResendMessage] = useState(null);
 
   useEffect(() => {
     fetchUserProfile();
@@ -41,11 +47,48 @@ export default function ProfilePage() {
 
   const handleUpdateProfile = async () => {
     try {
-      const response = await axios.put("/user/profile", formData);
+      setUpdating(true);
+      const response = await axios.put("/user/profile", {
+        name: formData.name,
+        phone: formData.phone,
+        location: formData.location,
+      });
       setUser(response.data.data);
       setEditing(false);
     } catch (error) {
       console.error(error);
+      alert(error.response?.data?.message || "Failed to update profile");
+    } finally {
+      setUpdating(false);
+    }
+  };
+
+  const handleResendVerification = async () => {
+    try {
+      setResending(true);
+      setResendMessage(null);
+      console.log(user);
+      
+      const response = await axios.post("/user/resend-verification", {
+        email: user.email,
+      });
+      
+      setResendMessage({
+        type: "success",
+        text: response.data.message || "Verification email sent! Please check your inbox."
+      });
+      
+      // Clear message after 5 seconds
+      setTimeout(() => setResendMessage(null), 5000);
+    } catch (error) {
+      setResendMessage({
+        type: "error",
+        text: error.response?.data?.message || "Failed to send verification email. Please try again."
+      });
+      
+      setTimeout(() => setResendMessage(null), 5000);
+    } finally {
+      setResending(false);
     }
   };
 
@@ -54,7 +97,13 @@ export default function ProfilePage() {
     navigate("/login");
   };
 
-  if (loading) return <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mt-20" />;
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600" />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 py-8">
@@ -64,6 +113,61 @@ export default function ProfilePage() {
           <h1 className="text-2xl font-bold text-gray-900">Personal Profile</h1>
           <p className="text-sm text-gray-500 mt-1">Manage your personal information</p>
         </div>
+
+        {/* Email Verification Warning with Resend Button */}
+        {!user?.is_verified && (
+          <div className="mb-6 bg-yellow-50 border border-yellow-200 rounded-xl p-4">
+            <div className="flex items-start justify-between gap-3">
+              <div className="flex items-start gap-3">
+                <AlertCircle size={18} className="text-yellow-600 mt-0.5" />
+                <div className="flex-1">
+                  <p className="text-sm font-medium text-yellow-800">Email not verified</p>
+                  <p className="text-xs text-yellow-700 mt-0.5">
+                    Verify your email to access all features like booking properties and messaging hosts.
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={handleResendVerification}
+                disabled={resending}
+                className="flex items-center gap-1.5 px-3 py-1.5 bg-yellow-100 text-yellow-800 rounded-lg text-xs font-medium hover:bg-yellow-200 transition disabled:opacity-50 whitespace-nowrap"
+              >
+                {resending ? (
+                  <>
+                    <div className="animate-spin rounded-full h-3 w-3 border-2 border-yellow-800 border-t-transparent" />
+                    <span>Sending...</span>
+                  </>
+                ) : (
+                  <>
+                    <Send size={12} />
+                    <span>Resend Email</span>
+                  </>
+                )}
+              </button>
+            </div>
+            
+            {/* Resend Message */}
+            {resendMessage && (
+              <div className={`mt-3 p-2 rounded-lg text-xs ${
+                resendMessage.type === "success" 
+                  ? "bg-green-100 text-green-800" 
+                  : "bg-red-100 text-red-800"
+              }`}>
+                {resendMessage.text}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Success Verification Banner */}
+        {user?.is_verified && (
+          <div className="mb-6 bg-green-50 border border-green-200 rounded-xl p-4">
+            <div className="flex items-center gap-3">
+              <CheckCircle size={18} className="text-green-600" />
+              <p className="text-sm text-green-800">Your email is verified. You have full access to all features.</p>
+            </div>
+          </div>
+        )}
 
         <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
           {/* Cover */}
@@ -92,6 +196,14 @@ export default function ProfilePage() {
                   <Shield size={12} />
                   {user?.role}
                 </span>
+                
+                {/* Verification Badge */}
+                {user?.is_verified && (
+                  <span className="inline-flex ml-5 items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-green-100 text-green-700">
+                    <CheckCircle size={12} />
+                    Verified
+                  </span>
+                )}
               </div>
 
               {/* Role-specific Dashboard Button */}
@@ -132,7 +244,7 @@ export default function ProfilePage() {
                         type="text"
                         value={formData.name || ""}
                         onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
                       />
                     </div>
                     <div>
@@ -141,7 +253,8 @@ export default function ProfilePage() {
                         type="tel"
                         value={formData.phone || ""}
                         onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                        placeholder="Add phone number"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
                       />
                     </div>
                     <div>
@@ -151,14 +264,21 @@ export default function ProfilePage() {
                         value={formData.location || ""}
                         onChange={(e) => setFormData({ ...formData, location: e.target.value })}
                         placeholder="City, Country"
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
                       />
                     </div>
                     <div className="flex gap-3">
-                      <button onClick={handleUpdateProfile} className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm">
-                        Save
+                      <button 
+                        onClick={handleUpdateProfile} 
+                        disabled={updating}
+                        className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700 transition disabled:opacity-50"
+                      >
+                        {updating ? "Saving..." : "Save Changes"}
                       </button>
-                      <button onClick={() => setEditing(false)} className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg text-sm">
+                      <button 
+                        onClick={() => setEditing(false)} 
+                        className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg text-sm hover:bg-gray-200 transition"
+                      >
                         Cancel
                       </button>
                     </div>
@@ -199,7 +319,7 @@ export default function ProfilePage() {
               {/* Account Actions */}
               <div className="border-t border-gray-100 pt-4 mt-4 space-y-2">
                 <button
-                  onClick={() => navigate("/settings/password")}
+                  onClick={() => navigate("/forgot-password")}
                   className="w-full flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition"
                 >
                   <div className="flex items-center gap-3">

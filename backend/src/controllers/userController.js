@@ -1,11 +1,12 @@
 const User = require("../models/userModel.js");
-const jwt = require("jsonwebtoken")
+const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 const sendTemplateMail = require("../utils/mailUtil.js");
 const { sendToken } = require("../utils/jwt.js");
 const crypto = require("crypto");
 const bookingModel = require("../models/bookingModel.js");
 const sendWelcomeAndVerificationMail = require("../utils/sendWelcomeAndVerificationMail.js");
+const sendVerificationEmail = require("../utils/sendVerifcationEmail.js");
 
 const register = async (req, res) => {
   try {
@@ -39,7 +40,7 @@ const register = async (req, res) => {
     createdUser.verificationExpires = Date.now() + 24 * 60 * 60 * 1000;
     await createdUser.save();
 
-    await sendWelcomeAndVerificationMail(createdUser, verificationToken);    
+    await sendWelcomeAndVerificationMail(createdUser, verificationToken);
 
     //creating token by taking unique fields like user id
     sendToken(createdUser, res);
@@ -63,44 +64,44 @@ const verifyEmail = async (req, res) => {
   try {
     const { token } = req.body;
 
-    if(!token){
+    if (!token) {
       return res.status(400).json({
         success: false,
-        message: "Verification token is required"
+        message: "Verification token is required",
       });
     }
 
     let decoded;
     try {
-      decoded = jwt.verify(token, process.env.JWT_KEY)
+      decoded = jwt.verify(token, process.env.JWT_KEY);
     } catch (error) {
-      if(error.name === "TokenExporedError"){
+      if (error.name === "TokenExporedError") {
         return res.status(400).json({
           success: false,
-          message: "Verification link has expired. Please request a new one."
+          message: "Verification link has expired. Please request a new one.",
         });
       }
 
       return res.status(400).json({
         success: false,
-        message: "Invalid verification token"
+        message: "Invalid verification token",
       });
     }
 
-    const user = await User.findById(decoded.id)
-    
-    if(!user){
+    const user = await User.findById(decoded.id);
+
+    if (!user) {
       return res.status(404).json({
         success: false,
-        message: "User not found"
+        message: "User not found",
       });
     }
 
-     // Check if already verified
+    // Check if already verified
     if (user.is_verified) {
       return res.status(400).json({
         success: false,
-        message: "Email already verified. You can login now."
+        message: "Email already verified. You can login now.",
       });
     }
 
@@ -112,15 +113,15 @@ const verifyEmail = async (req, res) => {
 
     res.status(200).json({
       success: true,
-      message: "Email verified successfully! You can now book properties."
+      message: "Email verified successfully! You can now book properties.",
     });
   } catch (error) {
     console.log(error);
     res.status(500).json({
-      message: error.message || "Internal server error"
-    })
+      message: error.message || "Internal server error",
+    });
   }
-}
+};
 
 // POST /api/auth/resend-verification (Optional but good to have)
 const resendVerification = async (req, res) => {
@@ -128,27 +129,25 @@ const resendVerification = async (req, res) => {
     const { email } = req.body;
 
     const user = await User.findOne({ email });
-    
+
     if (!user) {
       return res.status(404).json({
         success: false,
-        message: "User not found"
+        message: "User not found",
       });
     }
 
     if (user.is_verified) {
       return res.status(400).json({
         success: false,
-        message: "Email already verified"
+        message: "Email already verified",
       });
     }
 
     // Generate new token
-    const verificationToken = jwt.sign(
-      { userId: user._id },
-      process.env.JWT_SECRET,
-      { expiresIn: "24h" }
-    );
+    const verificationToken = jwt.sign({ id: user._id }, process.env.JWT_KEY, {
+      expiresIn: "24h",
+    });
 
     // Save token
     user.verificationToken = verificationToken;
@@ -160,14 +159,13 @@ const resendVerification = async (req, res) => {
 
     res.status(200).json({
       success: true,
-      message: "Verification email resent. Please check your inbox."
+      message: "Verification email resent. Please check your inbox.",
     });
-
   } catch (error) {
     console.error("Resend error:", error);
     res.status(500).json({
       success: false,
-      message: "Failed to resend verification email"
+      message: "Failed to resend verification email",
     });
   }
 };
@@ -406,5 +404,5 @@ module.exports = {
   resetPassword,
   getAllUsers,
   verifyEmail,
-  resendVerification
+  resendVerification,
 };
