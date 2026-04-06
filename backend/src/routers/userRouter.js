@@ -8,6 +8,7 @@ const {
   getAllUsers,
   verifyEmail,
   resendVerification,
+  changePassword,
 } = require("../controllers/userController");
 const authMiddleware = require("../middlewares/authMiddleware");
 const allowedRoles = require("../middlewares/allowedRoles");
@@ -32,6 +33,9 @@ router.post("/verify-email", verifyEmail)
 
 router.post("/resend-verification", resendVerification)
 
+router.put("/change-password", authMiddleware, changePassword)
+
 router.get("/", authMiddleware, allowedRoles("admin"), getAllUsers);
+
 
 module.exports = router;

@@ -18,6 +18,7 @@ import {
   CheckCircle,
   Send,
 } from "lucide-react";
+import { useAuth } from "../context/AuthContext"
 
 export default function ProfilePage() {
   const navigate = useNavigate();
@@ -28,6 +29,7 @@ export default function ProfilePage() {
   const [updating, setUpdating] = useState(false);
   const [resending, setResending] = useState(false);
   const [resendMessage, setResendMessage] = useState(null);
+  const { handleLogout } = useAuth()
 
   useEffect(() => {
     fetchUserProfile();
@@ -92,8 +94,8 @@ export default function ProfilePage() {
     }
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem("token");
+  const logout = () => {
+    handleLogout();
     navigate("/login");
   };
 
@@ -319,7 +321,7 @@ export default function ProfilePage() {
               {/* Account Actions */}
               <div className="border-t border-gray-100 pt-4 mt-4 space-y-2">
                 <button
-                  onClick={() => navigate("/forgot-password")}
+                  onClick={() => navigate("/change-password")}
                   className="w-full flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition"
                 >
                   <div className="flex items-center gap-3">
@@ -342,7 +344,7 @@ export default function ProfilePage() {
 
               {/* Logout */}
               <button
-                onClick={handleLogout}
+                onClick={logout}
                 className="w-full mt-6 flex items-center justify-center gap-2 px-4 py-2.5 bg-red-50 text-red-600 rounded-lg font-medium hover:bg-red-100 transition"
               >
                 <LogOut size={16} />

@@ -30,7 +30,8 @@ import AdminBookingDetail from "../pages/admin/AdminBookingDetail";
 import AdminPropertyDetail from "../pages/admin/AdminPropertyDetail";
 import GuestCheckoutPage from "../pages/guest/GuestCheckoutPage";
 import ProfilePage from "../pages/ProfilePage";
-import VerificationPage from "../pages/VerificationPage"
+import VerificationPage from "../pages/VerificationPage";
+import ChangePassword from "../pages/ChangePassword";
 
 const router = createBrowserRouter([
   // PUBLIC ROUTES
@@ -41,6 +42,8 @@ const router = createBrowserRouter([
   { path: "/forgot-password", element: <ForgotPassword /> },
 
   { path: "/reset-password/:token", element: <ResetPassword /> },
+
+  { path: "/verify-email/:token",  element: <VerificationPage /> },
 
   // USER ROUTES WITH NAVBAR
   {
@@ -82,9 +85,11 @@ const router = createBrowserRouter([
         ),
       },
       {
-        path: "verify-email/:token",
+        path: "change-password",
         element: (
-          <VerificationPage />
+          <ProtectedRoute allowedRoles={["guest", "host", "admin"]}>
+            <ChangePassword />
+          </ProtectedRoute>
         ),
       },
     ],

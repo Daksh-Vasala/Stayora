@@ -179,16 +179,7 @@ function UserNavbar({ userRole, onLogout }) {
             <User size={18} />
             Profile
           </NavLink>
-
-          <NavLink
-            to="/settings"
-            onClick={() => setAccountMenu(false)}
-            className="flex items-center gap-3 px-3 py-2 text-sm hover:bg-slate-50 rounded"
-          >
-            <Settings size={18} />
-            Settings
-          </NavLink>
-
+          
           <div className="border-t my-2"></div>
 
           <button
