@@ -1,10 +1,19 @@
 const Booking = require("../models/bookingModel");
 const Property = require("../models/propertyModel");
+const User = require("../models/userModel");
 
 // CREATE BOOKING
 const createBooking = async (req, res) => {
   try {
     const { propertyId, checkIn, checkOut, guestsCount } = req.body;
+    const { id } = req.user;
+
+    const user = await User.findById(id);
+    if(!user.is_verified){
+      return res.status(401).json({
+        message: "Your account is not verified, please verify first"
+      })
+    }
 
     const existingBooking = await Booking.findOne({
       property: propertyId,
