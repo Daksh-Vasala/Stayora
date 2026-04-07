@@ -1,217 +1,320 @@
+// pages/AdminDashboard.jsx
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import axios from "axios";
 import {
-  Users,
   Home,
+  Users,
+  Calendar,
   DollarSign,
-  ShieldAlert,
+  Eye,
+  CheckCircle,
+  XCircle,
+  Clock,
   TrendingUp,
   TrendingDown,
-  MapPin,
-  CheckCircle,
-  Clock,
-  XCircle,
+  MoreVertical,
+  Search,
+  Filter,
+  Download,
+  Settings,
+  LogOut,
+  Shield,
+  Star,
+  MessageSquare,
+  AlertTriangle,
 } from "lucide-react";
-import { useNavigate } from "react-router-dom";
-
-const STATS = [
-  {
-    label: "Total Users",
-    value: "12,345",
-    change: "+12%",
-    up: true,
-    icon: Users,
-  },
-  {
-    label: "Active Listings",
-    value: "856",
-    change: "+5%",
-    up: true,
-    icon: Home,
-  },
-  {
-    label: "Total Revenue",
-    value: "₹4.5L",
-    change: "+18%",
-    up: true,
-    icon: DollarSign,
-  },
-  {
-    label: "Pending Disputes",
-    value: "12",
-    change: "-2",
-    up: false,
-    icon: ShieldAlert,
-  },
-];
-
-const BOOKINGS = [
-  {
-    id: "BK001",
-    guest: "Priya Sharma",
-    property: "Luxury Beach Villa",
-    date: "Dec 24, 2024",
-    amount: "₹30,000",
-    status: "confirmed",
-  },
-  {
-    id: "BK002",
-    guest: "Rohan Mehta",
-    property: "Modern City Apartment",
-    date: "Jan 5, 2025",
-    amount: "₹12,600",
-    status: "pending",
-  },
-  {
-    id: "BK003",
-    guest: "Anjali Singh",
-    property: "Cozy Hill Cottage",
-    date: "Jan 15, 2025",
-    amount: "₹17,500",
-    status: "confirmed",
-  },
-  {
-    id: "BK004",
-    guest: "Vikram Patel",
-    property: "Luxury Penthouse",
-    date: "Feb 1, 2025",
-    amount: "₹19,000",
-    status: "cancelled",
-  },
-  {
-    id: "BK005",
-    guest: "Neha Gupta",
-    property: "Luxury Beach Villa",
-    date: "Feb 8, 2025",
-    amount: "₹37,500",
-    status: "confirmed",
-  },
-];
-
-const STATUS = {
-  confirmed: { cls: "bg-green-50 text-green-700", Icon: CheckCircle },
-  pending: { cls: "bg-amber-50 text-amber-700", Icon: Clock },
-  cancelled: { cls: "bg-red-50 text-red-600", Icon: XCircle },
-};
 
 export default function AdminDashboard() {
   const navigate = useNavigate();
-  return (
-    <div className="p-6 space-y-6">
-      {/* Page header */}
-      <div>
-        <h1 className="text-xl font-bold text-gray-900">Dashboard</h1>
-        <p className="text-sm text-gray-400 mt-0.5">
-          Platform overview and real-time metrics
-        </p>
-      </div>
+  const [loading, setLoading] = useState(true);
+  const [stats, setStats] = useState({
+    totalUsers: 0,
+    totalProperties: 0,
+    totalBookings: 0,
+    totalRevenue: 0,
+    pendingApprovals: 0,
+    activeListings: 0,
+  });
+  const [recentBookings, setRecentBookings] = useState([]);
+  const [pendingProperties, setPendingProperties] = useState([]);
+  const [selectedTab, setSelectedTab] = useState("overview");
 
-      {/* Stat cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        {STATS.map(({ label, value, change, up, icon: Icon }) => (
-          <div
-            key={label}
-            className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5"
-          >
-            <div className="flex items-center justify-between mb-3">
-              <p className="text-xs text-gray-400 font-medium">{label}</p>
-              <div className="w-8 h-8 bg-blue-50 rounded-lg flex items-center justify-center">
-                <Icon size={15} className="text-blue-600" />
+  useEffect(() => {
+    fetchDashboardData();
+  }, []);
+
+  const fetchDashboardData = async () => {
+    try {
+      setLoading(true);
+      const [statsRes, bookingsRes, propertiesRes] = await Promise.all([
+        axios.get("/admin/stats"),
+        axios.get("/bookings/getAll"),
+        axios.get("/admin/pending-properties"),
+      ]);
+      
+      setStats(statsRes.data.data);
+      setRecentBookings(bookingsRes.data.data);
+      setPendingProperties(propertiesRes.data.data);
+    } catch (error) {
+      console.error("Error fetching dashboard:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600" />
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+
+      {/* Main Content */}
+      <div>
+        {/* Header */}
+        <div className="bg-white border-b border-gray-200 sticky top-0 z-10">
+          <div className="px-8 py-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <h1 className="tex t-2xl font-bold text-gray-900">Dashboard</h1>
+                <p className="text-sm text-gray-500 mt-0.5">Welcome back, Admin</p>
+              </div>
+              <div className="flex items-center gap-3">
+                <div className="relative">
+                  <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                  <input
+                    type="text"
+                    placeholder="Search..."
+                    className="pl-9 pr-4 py-1.5 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+                <div className="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center">
+                  <span className="text-sm font-medium text-white">A</span>
+                </div>
               </div>
             </div>
-            <p className="text-2xl font-bold text-gray-900">{value}</p>
-            <p
-              className={`text-xs font-semibold mt-1.5 flex items-center gap-1 ${up ? "text-green-600" : "text-red-500"}`}
-            >
-              {up ? <TrendingUp size={12} /> : <TrendingDown size={12} />}
-              {change} this month
-            </p>
           </div>
-        ))}
-      </div>
-
-      {/* Recent bookings */}
-      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-        <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
-          <h3 className="text-sm font-bold text-gray-900">Recent Bookings</h3>
-          <button onClick={() => navigate("/admin/bookings")} className="text-xs font-semibold text-blue-600 hover:underline border-none bg-transparent cursor-pointer">
-            View all
-          </button>
         </div>
 
-        {/* Desktop table */}
-        <div className="hidden sm:grid grid-cols-[1fr_1.2fr_0.9fr_0.8fr_0.8fr] gap-4 px-5 py-2.5 bg-gray-50 border-b border-gray-100 text-[10px] font-bold text-gray-400 uppercase tracking-wide">
-          <span>Guest</span>
-          <span>Property</span>
-          <span>Date</span>
-          <span>Amount</span>
-          <span>Status</span>
-        </div>
+        {/* Stats Grid */}
+        <div className="p-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
+            <StatCard
+              title="Total Users"
+              value={stats?.totalUsers?.toLocaleString()}
+              icon={Users}
+              trend="+12%"
+              trendUp={true}
+              color="blue"
+            />
+            <StatCard
+              title="Properties"
+              value={stats?.totalProperties?.toLocaleString()}
+              icon={Home}
+              trend="+5%"
+              trendUp={true}
+              color="green"
+            />
+            <StatCard
+              title="Bookings"
+              value={stats?.totalBookings?.toLocaleString()}
+              icon={Calendar}
+              trend="+8%"
+              trendUp={true}
+              color="purple"
+            />
+            <StatCard
+              title="Revenue"
+              value={`₹${(stats.totalRevenue / 100000).toFixed(1)}L`}
+              icon={DollarSign}
+              trend="+15%"
+              trendUp={true}
+              color="orange"
+            />
+          </div>
 
-        <div className="divide-y divide-gray-50">
-          {BOOKINGS.map((b) => {
-            const S = STATUS[b.status];
-            return (
-              <div key={b.id} className="hover:bg-gray-50/50 transition-colors">
-                {/* Desktop */}
-                <div className="hidden sm:grid grid-cols-[1fr_1.2fr_0.9fr_0.8fr_0.8fr] gap-4 px-5 py-3.5 items-center">
-                  <div className="flex items-center gap-2.5">
-                    <div className="w-7 h-7 rounded-full bg-blue-100 text-blue-600 text-[10px] font-bold flex items-center justify-center shrink-0">
-                      {b.guest
-                        .split(" ")
-                        .map((w) => w[0])
-                        .join("")}
-                    </div>
-                    <span className="text-sm font-medium text-gray-900 truncate">
-                      {b.guest}
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-1.5 text-sm text-gray-500 truncate">
-                    <MapPin size={11} className="text-blue-400 shrink-0" />
-                    {b.property}
-                  </div>
-                  <span className="text-sm text-gray-500">{b.date}</span>
-                  <span className="text-sm font-semibold text-gray-900">
-                    {b.amount}
-                  </span>
-                  <span
-                    className={`text-[11px] font-semibold px-2.5 py-1 rounded-full w-fit ${S.cls}`}
-                  >
-                    {b.status}
-                  </span>
-                </div>
-                {/* Mobile */}
-                <div className="sm:hidden px-5 py-4 flex items-center justify-between gap-3">
-                  <div className="flex items-center gap-2.5">
-                    <div className="w-8 h-8 rounded-full bg-blue-100 text-blue-600 text-[11px] font-bold flex items-center justify-center shrink-0">
-                      {b.guest
-                        .split(" ")
-                        .map((w) => w[0])
-                        .join("")}
-                    </div>
-                    <div>
-                      <p className="text-sm font-semibold text-gray-900">
-                        {b.guest}
-                      </p>
-                      <p className="text-[11px] text-gray-400 truncate max-w-35">
-                        {b.property}
-                      </p>
-                    </div>
-                  </div>
-                  <div className="text-right shrink-0">
-                    <p className="text-sm font-bold text-gray-900">
-                      {b.amount}
+          {/* Pending Approvals Alert */}
+          {stats.pendingApprovals > 0 && (
+            <div className="mb-8 bg-yellow-50 border border-yellow-200 rounded-xl p-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <AlertTriangle size={20} className="text-yellow-600" />
+                  <div>
+                    <p className="text-sm font-medium text-yellow-800">
+                      {stats.pendingApprovals} properties pending approval
                     </p>
-                    <span
-                      className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${S.cls}`}
-                    >
-                      {b.status}
-                    </span>
+                    <p className="text-xs text-yellow-700 mt-0.5">
+                      Review and approve new listings to make them live
+                    </p>
                   </div>
                 </div>
+                <button
+                  onClick={() => navigate("/admin/listings?filter=pending")}
+                  className="px-3 py-1.5 bg-yellow-100 text-yellow-800 rounded-lg text-sm font-medium hover:bg-yellow-200 transition"
+                >
+                  Review Now →
+                </button>
               </div>
-            );
-          })}
+            </div>
+          )}
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Recent Bookings */}
+            <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
+              <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
+                <h3 className="text-sm font-semibold text-gray-900">Recent Bookings</h3>
+                <button className="text-xs text-blue-600 hover:text-blue-700">
+                  View all
+                </button>
+              </div>
+              <div className="divide-y divide-gray-100">
+                {recentBookings.map((booking) => (
+                  <div key={booking._id} className="px-5 py-3 flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center">
+                        <span className="text-xs font-medium text-gray-600">
+                          {booking.user?.name?.charAt(0)}
+                        </span>
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium text-gray-900">
+                          {booking.property?.title}
+                        </p>
+                        <p className="text-xs text-gray-500">
+                          {booking.user?.name} • ₹{booking.totalPrice?.toLocaleString()}
+                        </p>
+                      </div>
+                    </div>
+                    <span className={`text-xs px-2 py-0.5 rounded-full ${
+                      booking.status === "confirmed" 
+                        ? "bg-green-100 text-green-700"
+                        : booking.status === "pending"
+                        ? "bg-yellow-100 text-yellow-700"
+                        : "bg-red-100 text-red-700"
+                    }`}>
+                      {booking.status}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Pending Properties */}
+            <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
+              <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
+                <h3 className="text-sm font-semibold text-gray-900">Pending Approval</h3>
+                <button className="text-xs text-blue-600 hover:text-blue-700">
+                  View all
+                </button>
+              </div>
+              <div className="divide-y divide-gray-100">
+                {pendingProperties.map((property) => (
+                  <div key={property._id} className="px-5 py-3">
+                    <div className="flex items-center justify-between mb-1">
+                      <p className="text-sm font-medium text-gray-900">{property.title}</p>
+                      <div className="flex gap-1">
+                        <button className="p-1 hover:bg-green-50 rounded transition">
+                          <CheckCircle size={14} className="text-green-600" />
+                        </button>
+                        <button className="p-1 hover:bg-red-50 rounded transition">
+                          <XCircle size={14} className="text-red-600" />
+                        </button>
+                      </div>
+                    </div>
+                    <div className="flex items-center justify-between text-xs text-gray-500">
+                      <span>{property.location?.city}</span>
+                      <span>₹{property.pricePerNight?.toLocaleString()}/night</span>
+                      <span>by {property.host?.name}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Quick Actions */}
+          <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-4">
+            <QuickActionCard
+              title="Manage Users"
+              description="View and manage all platform users"
+              icon={Users}
+              onClick={() => navigate("/admin/users")}
+              color="blue"
+            />
+            <QuickActionCard
+              title="Review Listings"
+              description="Approve or reject property listings"
+              icon={Home}
+              onClick={() => navigate("/admin/listings")}
+              color="green"
+            />
+            <QuickActionCard
+              title="View Reports"
+              description="Analytics and platform insights"
+              icon={TrendingUp}
+              onClick={() => navigate("/admin/reports")}
+              color="purple"
+            />
+          </div>
         </div>
       </div>
     </div>
   );
 }
+
+// Stat Card Component
+const StatCard = ({ title, value, icon: Icon, trend, trendUp, color }) => {
+  const colors = {
+    blue: "bg-blue-50 text-blue-600",
+    green: "bg-green-50 text-green-600",
+    purple: "bg-purple-50 text-purple-600",
+    orange: "bg-orange-50 text-orange-600",
+  };
+  
+  return (
+    <div className="bg-white rounded-2xl border border-gray-200 p-5">
+      <div className="flex items-center justify-between mb-3">
+        <div className={`w-10 h-10 rounded-xl ${colors[color]} flex items-center justify-center`}>
+          <Icon size={20} />
+        </div>
+        {trend && (
+          <div className={`flex items-center gap-1 text-xs ${trendUp ? "text-green-600" : "text-red-600"}`}>
+            {trendUp ? <TrendingUp size={12} /> : <TrendingDown size={12} />}
+            {trend}
+          </div>
+        )}
+      </div>
+      <p className="text-2xl font-bold text-gray-900">{value}</p>
+      <p className="text-xs text-gray-500 mt-1">{title}</p>
+    </div>
+  );
+};
+
+// Quick Action Card
+const QuickActionCard = ({ title, description, icon: Icon, onClick, color }) => {
+  const colors = {
+    blue: "hover:bg-blue-50",
+    green: "hover:bg-green-50",
+    purple: "hover:bg-purple-50",
+  };
+  
+  return (
+    <button
+      onClick={onClick}
+      className={`flex items-center gap-4 p-4 bg-white rounded-xl border border-gray-200 ${colors[color]} transition text-left`}
+    >
+      <div className="w-10 h-10 rounded-xl bg-gray-100 flex items-center justify-center">
+        <Icon size={20} className="text-gray-600" />
+      </div>
+      <div>
+        <p className="text-sm font-medium text-gray-900">{title}</p>
+        <p className="text-xs text-gray-500 mt-0.5">{description}</p>
+      </div>
+    </button>
+  );
+};

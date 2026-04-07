@@ -19,7 +19,7 @@ import {
   DollarSign,
 } from "lucide-react";
 
-function UserNavbar({ userRole, onLogout }) {
+function UserNavbar({ userRole, onLogout, user }) {
   const [mobileMenu, setMobileMenu] = useState(false);
   const [accountMenu, setAccountMenu] = useState(false);
 
@@ -140,7 +140,7 @@ function UserNavbar({ userRole, onLogout }) {
               className="flex items-center bg-slate-100 border border-slate-200 rounded-full px-2 h-9"
             >
               <div className="w-7 h-7 rounded-full bg-linear-to-tr from-blue-500 to-indigo-600 flex items-center justify-center text-white text-xs font-bold">
-                JD
+                {user?.name?.charAt(0).toUpperCase()}
               </div>
 
               {accountMenu ? (

@@ -19,6 +19,7 @@ import {
   Send,
 } from "lucide-react";
 import { useAuth } from "../context/AuthContext"
+import { toast } from "react-toastify";
 
 export default function ProfilePage() {
   const navigate = useNavigate();
@@ -50,15 +51,17 @@ export default function ProfilePage() {
   const handleUpdateProfile = async () => {
     try {
       setUpdating(true);
-      const response = await axios.put("/user/profile", {
+      const response = await axios.put("/user/update", {
         name: formData.name,
         phone: formData.phone,
         location: formData.location,
       });
       setUser(response.data.data);
       setEditing(false);
+      toast.success(response?.data?.message)
     } catch (error) {
       console.error(error);
+      toast.error(error?.response?.data?.message || "Something wen wrong");
       alert(error.response?.data?.message || "Failed to update profile");
     } finally {
       setUpdating(false);
@@ -201,7 +204,7 @@ export default function ProfilePage() {
                 
                 {/* Verification Badge */}
                 {user?.is_verified && (
-                  <span className="inline-flex ml-5 items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-green-100 text-green-700">
+                  <span className="inline-flex ml-8 items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-green-100 text-green-700">
                     <CheckCircle size={12} />
                     Verified
                   </span>
@@ -327,16 +330,6 @@ export default function ProfilePage() {
                   <div className="flex items-center gap-3">
                     <Key size={16} className="text-gray-500" />
                     <span className="text-sm text-gray-700">Change Password</span>
-                  </div>
-                  <ChevronRight size={16} className="text-gray-400" />
-                </button>
-                <button
-                  onClick={() => navigate("/settings/notifications")}
-                  className="w-full flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition"
-                >
-                  <div className="flex items-center gap-3">
-                    <Bell size={16} className="text-gray-500" />
-                    <span className="text-sm text-gray-700">Notification Settings</span>
                   </div>
                   <ChevronRight size={16} className="text-gray-400" />
                 </button>

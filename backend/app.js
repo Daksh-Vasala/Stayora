@@ -27,6 +27,7 @@ const reviewRouter = require("./src/routers/reviewRouter.js");
 const messageRouter = require("./src/routers/messageRouter.js");
 const paymentRouter = require("./src/routers/paymentRouter.js");
 const chatRouter = require("./src/routers/chatRouter.js");
+const adminRouter = require("./src/routers/adminRouter.js");
 
 app.use("/user", userRouter);
 app.use("/property", propertyRouter);
@@ -35,5 +36,6 @@ app.use("/reviews", reviewRouter);
 app.use("/messages", messageRouter);
 app.use("/payments", paymentRouter);
 app.use("/chats", chatRouter);
+app.use("/admin", adminRouter);
 
 module.exports = app;

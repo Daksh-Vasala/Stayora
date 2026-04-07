@@ -450,6 +450,81 @@ const getStatistics = async (req, res) => {
   }
 };
 
+const updateUserProfile = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { name, phone, location } = req.body;
+    
+    // Find user
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found"
+      });
+    }
+    
+    // Update only allowed fields
+    if (name !== undefined && name.trim() !== "") {
+      user.name = name.trim();
+    }
+    
+    if (phone !== undefined) {
+      // Check if phone is already taken by another user
+      if (phone && phone.trim() !== "") {
+        const existingUser = await User.findOne({ 
+          phone: phone.trim(), 
+          _id: { $ne: userId } 
+        });
+        if (existingUser) {
+          return res.status(400).json({
+            success: false,
+            message: "Phone number already in use by another account"
+          });
+        }
+        user.phone = phone.trim();
+      } else {
+        user.phone = "";
+      }
+    }
+    
+    if (location !== undefined) {
+      user.location = location.trim() || "";
+    }
+    
+    // Save updated user
+    await user.save();
+    
+    // Return updated user (excluding sensitive fields)
+    const updatedUser = {
+      _id: user._id,
+      name: user.name,
+      email: user.email,
+      phone: user.phone,
+      location: user.location,
+      role: user.role,
+      profilePic: user.profilePic,
+      is_verified: user.is_verified,
+      isActive: user.isActive,
+      createdAt: user.createdAt,
+      updatedAt: user.updatedAt
+    };
+    
+    res.status(200).json({
+      success: true,
+      message: "Profile updated successfully",
+      data: updatedUser
+    });
+    
+  } catch (error) {
+    console.error("Update profile error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to update profile. Please try again."
+    });
+  }
+};
+
 module.exports = {
   register,
   login,
@@ -460,5 +535,6 @@ module.exports = {
   getAllUsers,
   verifyEmail,
   resendVerification,
-  changePassword
+  changePassword,
+  updateUserProfile
 };
