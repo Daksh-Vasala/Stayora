@@ -13,25 +13,9 @@ router.get(
   allowedRoles("host"),
   bookingController.getBookingsOfHost,
 );
-router.get(
-  "/getAll",
-  authMiddleware,
-  allowedRoles("admin"),
-  bookingController.getAllBookings,
-);
+
 router.get("/:id", authMiddleware, bookingController.getBookingById);
-router.put(
-  "/:id",
-  authMiddleware,
-  allowedRoles("admin"),
-  bookingController.updateBooking,
-);
-router.patch(
-  "/:id/status",
-  authMiddleware,
-  allowedRoles("admin"),
-  bookingController.toggleStatus,
-);
+
 router.delete("/:id", authMiddleware, bookingController.deleteBooking);
 
 module.exports = router;

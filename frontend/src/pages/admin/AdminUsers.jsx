@@ -26,7 +26,7 @@ export default function AdminUsers() {
 
   // ── Fetch from API ──────────────────────────────────────────────────────────
   useEffect(() => {
-    axios.get("/user")           // adjust endpoint if needed
+    axios.get("/admin/getUsers")           // adjust endpoint if needed
       .then(r => setUsers(r.data.users || []))
       .catch(err => console.error(err))
       .finally(() => setLoading(false));

@@ -15,7 +15,7 @@ export default function AdminListings() {
    const fetchData = async () => {
     setLoading(true);
     try {
-      const res = await axios.get("/property/admin");
+      const res = await axios.get("/admin/getProperties");
       setListings(res.data.data);
     } catch (error) {
       console.log(error);

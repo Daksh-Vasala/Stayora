@@ -6,9 +6,6 @@ const {
   deleteProperty,
   getPropertiesOfHost,
   toggleStatus,
-  getAllPropertiesForAdmin,
-  approveProperty,
-  rejectProperty,
 } = require("../controllers/propertyController");
 const authMiddleware = require("../middlewares/authMiddleware");
 const allowedRoles = require("../middlewares/allowedRoles");
@@ -28,8 +25,6 @@ router.post(
 
 router.get("/host", authMiddleware, allowedRoles("host"), getPropertiesOfHost);
 
-router.get("/admin", authMiddleware, allowedRoles("admin"), getAllPropertiesForAdmin);
-
 router.get("/:id", getPropertyById);
 
 router.put(
@@ -43,9 +38,5 @@ router.put(
 router.patch("/deactivate/:id", authMiddleware, allowedRoles("host", "admin"), toggleStatus);
 
 router.patch("/delete/:id", authMiddleware, allowedRoles("host", "admin"), deleteProperty);
-
-router.patch("/:id/approve", authMiddleware, allowedRoles("admin"), approveProperty);
-
-router.patch("/:id/reject", authMiddleware, allowedRoles("admin"), rejectProperty);
 
 module.exports = router;

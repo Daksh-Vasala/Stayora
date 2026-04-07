@@ -5,7 +5,6 @@ const {
   me,
   forgotPassword,
   resetPassword,
-  getAllUsers,
   verifyEmail,
   resendVerification,
   changePassword,
@@ -35,8 +34,6 @@ router.post("/verify-email", verifyEmail)
 router.post("/resend-verification", resendVerification)
 
 router.put("/change-password", authMiddleware, changePassword)
-
-router.get("/", authMiddleware, allowedRoles("admin"), getAllUsers);
 
 router.put("/update", authMiddleware, updateUserProfile);
 

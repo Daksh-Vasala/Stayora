@@ -7,7 +7,14 @@ const {
   getRecentBookings,
   getPendingProperties,
   getRecentUsers,
-  getRecentProperties
+  getRecentProperties,
+  getAllPropertiesForAdmin,
+  getAllUsers,
+  approveProperty,
+  rejectProperty,
+  updateBooking,
+  toggleStatus,
+  getAllBookings,
 } = require("../controllers/adminController");
 const allowRoles = require("../middlewares/allowedRoles");
 
@@ -16,6 +23,13 @@ router.use(authMiddleware);
 router.use(allowRoles("admin"));
 
 // Dashboard routes
+router.get("/getUsers", getAllUsers);
+router.get("/getProperties", getAllPropertiesForAdmin);
+router.patch("/:id/approve", approveProperty);
+router.patch("/:id/reject", rejectProperty);
+router.put("/booking/:id", updateBooking);
+router.patch("/booking/:id/status", toggleStatus);
+router.get("/getAllBookings", getAllBookings);
 router.get("/stats", getAdminStats);
 router.get("/recent-bookings", getRecentBookings);
 router.get("/pending-properties", getPendingProperties);

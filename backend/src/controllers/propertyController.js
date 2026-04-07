@@ -68,22 +68,6 @@ const getAllProperties = async (req, res) => {
   }
 };
 
-const getAllPropertiesForAdmin = async (req, res) => {
-  try {
-    const properties = await Property.find().populate(
-      "host",
-      "name email",
-    );
-    res.status(200).json({
-      message: "Properties fetched",
-      data: properties,
-    });
-  } catch (error) {
-    console.log(error);
-    res.status(500).json({ message: "Internal server error" });
-  }
-};
-
 const getPropertyById = async (req, res) => {
   try {
     const property = await Property.findById(req.params.id).populate(
@@ -168,48 +152,7 @@ const updateProperty = async (req, res) => {
   res.json({ success: true, data: updated });
 };
 
-const approveProperty = async (req, res) => {
-  try {
-    const property = await Property.findOne({ _id: req.params.id, isDeleted: false });
 
-    if(!property){
-      return res.status(400).json({message: "Property not found"});
-    }
-
-    property.approvalStatus = "approved";
-    await property.save();
-    res.status(200).json({
-      message: "Property approved"
-    })
-  } catch (error) {
-    console.log(error);
-    res.status(500).json({
-      message: error.message || "Internal server error"
-    })
-  }
-}
-
-const rejectProperty = async (req, res) => {
-  try {
-    const property = await Property.findOne({ _id: req.params.id, isDeleted: false });
-
-    if(!property){
-      return res.status(400).json({message: "Property not found"});
-    }
-
-    property.approvalStatus = "rejected";
-    property.status = "inactive";
-    await property.save();
-    res.status(200).json({
-      message: "Property rejected"
-    })
-  } catch (error) {
-    console.log(error);
-    res.status(500).json({
-      message: error.message || "Internal server error"
-    })
-  }
-}
 
 const deleteProperty = async (req, res) => {
   try {
@@ -285,7 +228,4 @@ module.exports = {
   updateProperty,
   getPropertiesOfHost,
   toggleStatus,
-  getAllPropertiesForAdmin,
-  approveProperty,
-  rejectProperty,
 };

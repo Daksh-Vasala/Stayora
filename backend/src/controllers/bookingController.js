@@ -105,74 +105,7 @@ const getBookingById = async (req, res) => {
   }
 };
 
-const getAllBookings = async (req, res) => {
-  try {
-    const booking = await Booking.find()
-      .populate("property")
-      .populate("guest");
 
-    if (!booking) {
-      return res.status(404).json({ message: "Bookings not found" });
-    }
-
-    res.json({
-      success: true,
-      data: booking,
-    });
-  } catch (error) {
-    console.log(error);
-    res.status(500).json({ message: error.message || "Internal server error" });
-  }
-};
-
-// UPDATE BOOKING
-const updateBooking = async (req, res) => {
-  try {
-    const booking = await Booking.findById(req.params.id);
-
-    if (!booking) {
-      return res.status(404).json({ message: "Booking not found" });
-    }
-    
-    const updatedBooking = await Booking.findByIdAndUpdate(
-      req.params.id,
-      req.body,
-      {
-        new: true,
-      },
-    );
-
-    res.json({
-      success: true,
-      data: updatedBooking,
-    });
-  } catch (error) {
-    console.log(error);
-    res.status(500).json({ message: error.message || "Internal server error" });
-  }
-};
-
-const toggleStatus = async (req, res) => {
-  try {
-    const booking = await Booking.findById(req.params.id);
-    
-    if(!booking){
-      return res.status(404).json({ message: "Booking not found" });
-    }
-    const { status } = req.body;
-    const oldStatus = booking.status
-    booking.status = status || oldStatus;
-    await booking.save();
-
-    res.json({
-      success: true,
-      message: "Booking status updated",
-    });
-  } catch (error) {
-    console.log(error);
-    res.status(500).json({ message: error.message || "Internal server error" });
-  }
-};
 
 // DELETE BOOKING
 const deleteBooking = async (req, res) => {
@@ -208,11 +141,8 @@ const getBookingOfUser = async (req, res) => {
 
 module.exports = {
   createBooking,
-  updateBooking,
   getBookingById,
   getBookingsOfHost,
   deleteBooking,
-  getAllBookings,
-  toggleStatus,
   getBookingOfUser
 };

@@ -1,4 +1,5 @@
-// AdminPropertyDetail.jsx
+// AdminPropertyDetail.jsx - Updated with deleted state handling
+
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
@@ -22,6 +23,7 @@ import {
   XCircle,
   Clock,
   Trash2,
+  Ban,
 } from "lucide-react";
 
 const PROPERTY_TYPES = {
@@ -99,25 +101,16 @@ export default function AdminPropertyDetail() {
     }
   };
 
-  const updateProperty = async (updates) => {
-    try {
-      setUpdating(true);
-      const response = await axios.patch(`/property/admin/${id}`, updates);
-      setProperty(response.data.data);
-      return true;
-    } catch (err) {
-      console.error("Error updating property:", err);
-      alert("Failed to update property");
-      return false;
-    } finally {
-      setUpdating(false);
-    }
-  };
-
   const handleStatusToggle = async () => {
+    // Don't allow if property is deleted
+    if (property.isDeleted) {
+      toast.error("Cannot modify a deleted property");
+      return;
+    }
+    
     try {
       const status = property.status === "active" ? "inactive" : "active";
-      const res = await axios.patch(`/property/deactivate/${id}`, {status});
+      const res = await axios.patch(`/property/deactivate/${id}`, { status });
       fetchProperty();
       toast.success(res.data.message);
     } catch (error) {
@@ -127,8 +120,14 @@ export default function AdminPropertyDetail() {
   };
 
   const handleApproval = async () => {
+    // Don't allow if property is deleted
+    if (property.isDeleted) {
+      toast.error("Cannot modify a deleted property");
+      return;
+    }
+    
     try {
-      const res = await axios.patch(`/property/${id}/approve`);
+      const res = await axios.patch(`/admin/${id}/approve`);
       fetchProperty();
       toast.success(res.data.message);
     } catch (error) {
@@ -138,8 +137,14 @@ export default function AdminPropertyDetail() {
   };
 
   const handleReject = async () => {
+    // Don't allow if property is deleted
+    if (property.isDeleted) {
+      toast.error("Cannot modify a deleted property");
+      return;
+    }
+    
     try {
-      const res = await axios.patch(`/property/${id}/reject`);
+      const res = await axios.patch(`/admin/${id}/reject`);
       fetchProperty();
       toast.success(res?.data?.message);
     } catch (error) {
@@ -149,14 +154,22 @@ export default function AdminPropertyDetail() {
   };
 
   const handleDelete = async () => {
-    if (!confirm("Are you sure you want to delete this property?")) return;
+    if (property.isDeleted) {
+      toast.error("Property is already deleted");
+      return;
+    }
+    
+    if (!confirm("Are you sure you want to delete this property? This action cannot be undone.")) {
+      return;
+    }
 
     try {
-      await axios.patch(`/property/delete/${id}`);
+      const res = await axios.patch(`/property/delete/${id}`);
       fetchProperty();
+      toast.success(res.data.message || "Property deleted successfully");
     } catch (err) {
       console.error("Delete failed:", err);
-      alert("Failed to delete property");
+      toast.error(err?.response?.data?.message || "Failed to delete property");
     }
   };
 
@@ -184,8 +197,9 @@ export default function AdminPropertyDetail() {
     );
   }
 
-  const ApprovalIcon = APPROVAL_CONFIG[property.approvalStatus].icon;
-  const StatusIcon = STATUS_CONFIG[property.status].icon;
+  const ApprovalIcon = APPROVAL_CONFIG[property.approvalStatus]?.icon || Clock;
+  const StatusIcon = STATUS_CONFIG[property.status]?.icon || CheckCircle;
+  const isDeleted = property.isDeleted;
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -203,6 +217,11 @@ export default function AdminPropertyDetail() {
               <div>
                 <h1 className="text-xl font-bold text-gray-900">
                   {property.title}
+                  {isDeleted && (
+                    <span className="ml-2 text-sm font-normal text-red-500">
+                      (Deleted)
+                    </span>
+                  )}
                 </h1>
                 <p className="text-sm text-gray-500 mt-0.5">
                   Property ID: {property._id}
@@ -210,8 +229,14 @@ export default function AdminPropertyDetail() {
               </div>
             </div>
             <div className="flex items-center gap-3">
-              {property.isDeleted ? (
-                <p className="text-red-500 font-bold mr-4">Deleted</p>
+              {isDeleted ? (
+                <button
+                  disabled
+                  className="px-4 py-2 bg-gray-400 text-white rounded-lg text-sm font-semibold flex items-center gap-2 cursor-not-allowed"
+                >
+                  <Ban size={16} />
+                  Deleted
+                </button>
               ) : (
                 <button
                   onClick={handleDelete}
@@ -227,9 +252,23 @@ export default function AdminPropertyDetail() {
         </div>
       </div>
 
+      {/* Deleted Property Banner */}
+      {isDeleted && (
+        <div className="bg-red-50 border-b border-red-200">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
+            <div className="flex items-center gap-2 text-red-700">
+              <Ban size={18} />
+              <p className="text-sm font-medium">
+                This property has been deleted. No actions can be performed.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Main Content */}
+          {/* Main Content - Same as before */}
           <div className="lg:col-span-2 space-y-6">
             {/* Images */}
             <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
@@ -305,22 +344,22 @@ export default function AdminPropertyDetail() {
 
           {/* Sidebar */}
           <div className="space-y-6">
-            {/* Approval Status Card */}
-            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+            {/* Approval Status Card - Disabled if deleted */}
+            <div className={`bg-white rounded-2xl shadow-sm border border-gray-100 p-6 ${isDeleted ? 'opacity-60' : ''}`}>
               <h3 className="text-sm font-semibold text-gray-900 mb-4">
                 Approval Status
               </h3>
               <div className="space-y-3">
                 <div
-                  className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full ${APPROVAL_CONFIG[property.approvalStatus].color}`}
+                  className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full ${APPROVAL_CONFIG[property.approvalStatus]?.color || 'bg-gray-100 text-gray-600'}`}
                 >
                   <ApprovalIcon size={14} />
                   <span className="text-sm font-medium">
-                    {APPROVAL_CONFIG[property.approvalStatus].label}
+                    {APPROVAL_CONFIG[property.approvalStatus]?.label || property.approvalStatus}
                   </span>
                 </div>
 
-                {property.approvalStatus === "pending" && (
+                {property.approvalStatus === "pending" && !isDeleted && (
                   <div className="flex gap-2 mt-4">
                     <button
                       onClick={handleApproval}
@@ -340,37 +379,52 @@ export default function AdminPropertyDetail() {
                     </button>
                   </div>
                 )}
+
+                {property.approvalStatus === "pending" && isDeleted && (
+                  <p className="text-xs text-gray-400 mt-2">Actions disabled for deleted property</p>
+                )}
               </div>
             </div>
 
-            {/* Status Card */}
-            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+            {/* Status Card - Disabled if deleted */}
+            <div className={`bg-white rounded-2xl shadow-sm border border-gray-100 p-6 ${isDeleted ? 'opacity-60' : ''}`}>
               <h3 className="text-sm font-semibold text-gray-900 mb-4">
                 Listing Status
               </h3>
               <div className="space-y-3">
                 <div
-                  className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full ${STATUS_CONFIG[property.status].color}`}
+                  className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full ${STATUS_CONFIG[property.status]?.color || 'bg-gray-100 text-gray-600'}`}
                 >
                   <StatusIcon size={14} />
                   <span className="text-sm font-medium">
-                    {STATUS_CONFIG[property.status].label}
+                    {STATUS_CONFIG[property.status]?.label || property.status}
                   </span>
                 </div>
 
                 <button
                   onClick={handleStatusToggle}
-                  disabled={updating}
-                  className="w-full mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-semibold hover:bg-blue-700 transition-colors disabled:opacity-50"
+                  disabled={updating || isDeleted}
+                  className={`w-full mt-4 px-4 py-2 rounded-lg text-sm font-semibold transition-colors disabled:opacity-50 flex items-center justify-center gap-2 ${
+                    isDeleted 
+                      ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                      : 'bg-blue-600 text-white hover:bg-blue-700'
+                  }`}
                 >
-                  {property.status === "active"
-                    ? "Deactivate Listing"
-                    : "Activate Listing"}
+                  {isDeleted ? (
+                    <>
+                      <Ban size={16} />
+                      Deleted
+                    </>
+                  ) : property.status === "active" ? (
+                    "Deactivate Listing"
+                  ) : (
+                    "Activate Listing"
+                  )}
                 </button>
               </div>
             </div>
 
-            {/* Details Card */}
+            {/* Details Card - Same */}
             <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
               <h3 className="text-sm font-semibold text-gray-900 mb-4">
                 Property Details
@@ -379,14 +433,13 @@ export default function AdminPropertyDetail() {
                 <div className="flex justify-between items-center py-2 border-b border-gray-100">
                   <span className="text-sm text-gray-500">Type</span>
                   <span className="text-sm font-medium text-gray-900 capitalize">
-                    {PROPERTY_TYPES[property.propertyType] ||
-                      property.propertyType}
+                    {PROPERTY_TYPES[property.propertyType] || property.propertyType}
                   </span>
                 </div>
                 <div className="flex justify-between items-center py-2 border-b border-gray-100">
                   <span className="text-sm text-gray-500">Price per night</span>
                   <span className="text-sm font-bold text-gray-900">
-                    ₹{property.pricePerNight.toLocaleString()}
+                    ₹{property.pricePerNight?.toLocaleString()}
                   </span>
                 </div>
                 <div className="flex justify-between items-center py-2 border-b border-gray-100">
@@ -469,6 +522,11 @@ export default function AdminPropertyDetail() {
                 <p>
                   Last Updated: {new Date(property.updatedAt).toLocaleString()}
                 </p>
+                {property.deletedAt && (
+                  <p className="text-red-500">
+                    Deleted: {new Date(property.deletedAt).toLocaleString()}
+                  </p>
+                )}
               </div>
             </div>
           </div>

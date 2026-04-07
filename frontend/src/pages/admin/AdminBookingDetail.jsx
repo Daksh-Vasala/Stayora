@@ -43,7 +43,7 @@ export default function AdminBookingDetail() {
     setDropdown(false);
     setUpdating(true);
     try {
-      await axios.patch(`/bookings/${id}/status`, { status });
+      await axios.patch(`/admin/booking/${id}/status`, { status });
       setBooking(p => ({ ...p, status }));
     } catch (e) {
       console.error(e);
