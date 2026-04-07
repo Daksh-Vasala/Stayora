@@ -32,6 +32,7 @@ import GuestCheckoutPage from "../pages/guest/GuestCheckoutPage";
 import ProfilePage from "../pages/ProfilePage";
 import VerificationPage from "../pages/VerificationPage";
 import ChangePassword from "../pages/ChangePassword";
+import GuestBookingDetailPage from "../pages/guest/GuestBookingDetailPage";
 
 const router = createBrowserRouter([
   // PUBLIC ROUTES
@@ -62,6 +63,14 @@ const router = createBrowserRouter([
       },
       {
         path: "bookings/:id",
+        element: (
+          <ProtectedRoute allowedRoles={["guest", "host"]}>
+            <GuestBookingDetailPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "bookings/checkout/:id",
         element: (
           <ProtectedRoute allowedRoles={["guest"]}>
             <GuestCheckoutPage />

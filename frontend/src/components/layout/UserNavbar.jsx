@@ -93,14 +93,6 @@ function UserNavbar({ userRole, onLogout, user }) {
 
         {/* Right Section */}
         <div className="flex items-center gap-2 ml-auto md:ml-2">
-          {/* Notifications */}
-          {userRole && (
-            <button className="relative w-9 h-9 flex items-center justify-center rounded-full border border-slate-200 hover:bg-slate-50">
-              <Bell size={18} className="text-slate-600" />
-              <span className="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full"></span>
-            </button>
-          )}
-
           {/* Guest CTA */}
           {userRole === "guest" && (
             <NavLink

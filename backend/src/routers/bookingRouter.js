@@ -14,7 +14,12 @@ router.get(
   bookingController.getBookingsOfHost,
 );
 
+router.get("/getBookings", authMiddleware, bookingController.getBookingOfUser);
+
 router.get("/:id", authMiddleware, bookingController.getBookingById);
+
+// Cancel booking
+router.patch("/:id/cancel", authMiddleware, bookingController.cancelBooking);
 
 router.delete("/:id", authMiddleware, bookingController.deleteBooking);
 

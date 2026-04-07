@@ -104,7 +104,7 @@ function PropertyDetail() {
       });
       console.log(res);
       toast.success(res.data.message);
-      navigate(`/bookings/${res.data.data._id}`);
+      navigate(`/bookings/checkout/${res.data.data._id}`);
     } catch (error) {
       console.log(error);
       toast.error(error?.response?.data?.message || "Internal server error");

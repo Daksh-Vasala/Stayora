@@ -78,8 +78,58 @@ const bookingSchema = new Schema(
     cancellationReason: {
       type: String,
     },
+
+    // ========== ADD THESE FIELDS ==========
+    
+    // 🔷 Cancellation tracking
+    cancelledAt: {
+      type: Date,
+      default: null,
+    },
+
+    // 🔷 Refund details
+    refundAmount: {
+      type: Number,
+      default: 0,
+    },
+
+    refundPercentage: {
+      type: Number,
+      default: 0,
+    },
+
+    refundProcessedAt: {
+      type: Date,
+      default: null,
+    },
+
+    // 🔷 Cancellation message (what user sees)
+    cancellationMessage: {
+      type: String,
+      default: "",
+    },
+
+    // 🔷 Who cancelled (user, host, or admin)
+    cancelledBy: {
+      type: String,
+      enum: ["guest", "host", "admin", null],
+      default: null,
+    },
+
+    // 🔷 Completed at (when trip ended)
+    completedAt: {
+      type: Date,
+      default: null,
+    },
   },
   { timestamps: true }
 );
+
+// ========== ADD INDEXES FOR BETTER PERFORMANCE ==========
+bookingSchema.index({ guest: 1, createdAt: -1 });
+bookingSchema.index({ host: 1, createdAt: -1 });
+bookingSchema.index({ status: 1 });
+bookingSchema.index({ cancelledAt: 1 });
+bookingSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 }); // Auto-delete expired pending bookings
 
 module.exports = mongoose.model("Booking", bookingSchema);
