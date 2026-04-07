@@ -7,21 +7,11 @@ import {
   Users,
   Calendar,
   DollarSign,
-  Eye,
   CheckCircle,
   XCircle,
-  Clock,
   TrendingUp,
   TrendingDown,
-  MoreVertical,
   Search,
-  Filter,
-  Download,
-  Settings,
-  LogOut,
-  Shield,
-  Star,
-  MessageSquare,
   AlertTriangle,
 } from "lucide-react";
 
@@ -49,7 +39,7 @@ export default function AdminDashboard() {
       setLoading(true);
       const [statsRes, bookingsRes, propertiesRes] = await Promise.all([
         axios.get("/admin/stats"),
-        axios.get("/bookings/getAll"),
+        axios.get("/admin/recent-bookings"),
         axios.get("/admin/pending-properties"),
       ]);
       
@@ -106,7 +96,7 @@ export default function AdminDashboard() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
             <StatCard
               title="Total Users"
-              value={stats?.totalUsers?.toLocaleString()}
+              value={stats?.users?.total?.toLocaleString()}
               icon={Users}
               trend="+12%"
               trendUp={true}
@@ -114,7 +104,7 @@ export default function AdminDashboard() {
             />
             <StatCard
               title="Properties"
-              value={stats?.totalProperties?.toLocaleString()}
+              value={stats?.properties?.total?.toLocaleString()}
               icon={Home}
               trend="+5%"
               trendUp={true}
@@ -122,7 +112,7 @@ export default function AdminDashboard() {
             />
             <StatCard
               title="Bookings"
-              value={stats?.totalBookings?.toLocaleString()}
+              value={stats?.bookings?.total?.toLocaleString()}
               icon={Calendar}
               trend="+8%"
               trendUp={true}
@@ -130,7 +120,7 @@ export default function AdminDashboard() {
             />
             <StatCard
               title="Revenue"
-              value={`₹${(stats.totalRevenue / 100000).toFixed(1)}L`}
+              value={`₹${(stats?.revenue?.total / 100000).toFixed(1)}L`}
               icon={DollarSign}
               trend="+15%"
               trendUp={true}
@@ -168,7 +158,7 @@ export default function AdminDashboard() {
             <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
               <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
                 <h3 className="text-sm font-semibold text-gray-900">Recent Bookings</h3>
-                <button className="text-xs text-blue-600 hover:text-blue-700">
+                <button onClick={() => navigate("/admin/bookings")} className="text-xs text-blue-600 hover:text-blue-700">
                   View all
                 </button>
               </div>
@@ -208,7 +198,7 @@ export default function AdminDashboard() {
             <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
               <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
                 <h3 className="text-sm font-semibold text-gray-900">Pending Approval</h3>
-                <button className="text-xs text-blue-600 hover:text-blue-700">
+                <button onClick={() => navigate("/admin/listings")} className="text-xs text-blue-600 hover:text-blue-700">
                   View all
                 </button>
               </div>
@@ -257,7 +247,7 @@ export default function AdminDashboard() {
               title="View Reports"
               description="Analytics and platform insights"
               icon={TrendingUp}
-              onClick={() => navigate("/admin/reports")}
+              onClick={() => navigate("/admin/disputes")}
               color="purple"
             />
           </div>
