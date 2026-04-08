@@ -13,6 +13,10 @@ import {
   TrendingDown,
   Search,
   AlertTriangle,
+  Eye,
+  Clock,
+  MapPin,
+  User,
 } from "lucide-react";
 
 export default function AdminDashboard() {
@@ -63,7 +67,6 @@ export default function AdminDashboard() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-
       {/* Main Content */}
       <div>
         {/* Header */}
@@ -71,7 +74,7 @@ export default function AdminDashboard() {
           <div className="px-8 py-4">
             <div className="flex items-center justify-between">
               <div>
-                <h1 className="tex t-2xl font-bold text-gray-900">Dashboard</h1>
+                <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
                 <p className="text-sm text-gray-500 mt-0.5">Welcome back, Admin</p>
               </div>
               <div className="flex items-center gap-3">
@@ -194,35 +197,66 @@ export default function AdminDashboard() {
               </div>
             </div>
 
-            {/* Pending Properties */}
+            {/* Pending Properties - Improved UI */}
             <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
               <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
-                <h3 className="text-sm font-semibold text-gray-900">Pending Approval</h3>
-                <button onClick={() => navigate("/admin/listings")} className="text-xs text-blue-600 hover:text-blue-700">
-                  View all
+                <div className="flex items-center gap-2">
+                  <Clock size={16} className="text-yellow-600" />
+                  <h3 className="text-sm font-semibold text-gray-900">Pending Approval</h3>
+                </div>
+                <button 
+                  onClick={() => navigate("/admin/listings?filter=pending")} 
+                  className="text-xs text-blue-600 hover:text-blue-700 font-medium"
+                >
+                  View all →
                 </button>
               </div>
               <div className="divide-y divide-gray-100">
-                {pendingProperties.map((property) => (
-                  <div key={property._id} className="px-5 py-3">
-                    <div className="flex items-center justify-between mb-1">
-                      <p className="text-sm font-medium text-gray-900">{property.title}</p>
-                      <div className="flex gap-1">
-                        <button className="p-1 hover:bg-green-50 rounded transition">
-                          <CheckCircle size={14} className="text-green-600" />
-                        </button>
-                        <button className="p-1 hover:bg-red-50 rounded transition">
-                          <XCircle size={14} className="text-red-600" />
+                {pendingProperties.length === 0 ? (
+                  <div className="px-5 py-8 text-center">
+                    <CheckCircle size={32} className="text-green-500 mx-auto mb-2" />
+                    <p className="text-sm text-gray-500">No pending approvals</p>
+                    <p className="text-xs text-gray-400 mt-1">All properties are approved</p>
+                  </div>
+                ) : (
+                  pendingProperties.map((property) => (
+                    <div key={property._id} className="px-5 py-3 hover:bg-gray-50 transition">
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 mb-1">
+                            <p className="text-sm font-medium text-gray-900 truncate">
+                              {property.title}
+                            </p>
+                            <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-yellow-100 text-yellow-700">
+                              Pending
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-3 text-xs text-gray-500">
+                            <div className="flex items-center gap-1">
+                              <MapPin size={10} />
+                              <span>{property.location?.city || "Unknown"}</span>
+                            </div>
+                            <div className="flex items-center gap-1">
+                              <User size={10} />
+                              <span>{property.host?.name || "Unknown"}</span>
+                            </div>
+                          </div>
+                          <p className="text-xs font-semibold text-gray-900 mt-1.5">
+                            ₹{property.pricePerNight?.toLocaleString() || 0}
+                            <span className="text-xs text-gray-400 font-normal"> /night</span>
+                          </p>
+                        </div>
+                        <button
+                          onClick={() => navigate(`/admin/listings/${property._id}`)}
+                          className="flex items-center gap-1 px-2 py-1 text-xs text-blue-600 hover:bg-blue-50 rounded-lg transition"
+                        >
+                          <Eye size={12} />
+                          Review
                         </button>
                       </div>
                     </div>
-                    <div className="flex items-center justify-between text-xs text-gray-500">
-                      <span>{property.location?.city}</span>
-                      <span>₹{property.pricePerNight?.toLocaleString()}/night</span>
-                      <span>by {property.host?.name}</span>
-                    </div>
-                  </div>
-                ))}
+                  ))
+                )}
               </div>
             </div>
           </div>
@@ -296,7 +330,7 @@ const QuickActionCard = ({ title, description, icon: Icon, onClick, color }) => 
   return (
     <button
       onClick={onClick}
-      className={`flex items-center gap-4 p-4 bg-white rounded-xl border border-gray-200 ${colors[color]} transition text-left`}
+      className={`flex items-center gap-4 p-4 bg-white rounded-xl border border-gray-200 ${colors[color]} transition text-left w-full`}
     >
       <div className="w-10 h-10 rounded-xl bg-gray-100 flex items-center justify-center">
         <Icon size={20} className="text-gray-600" />

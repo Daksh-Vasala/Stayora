@@ -11,13 +11,14 @@ import {
   LogOut,
   ChevronLeft,
   ChevronRight,
-  X,
   NotepadText,
+  Menu,
+  X,
 } from "lucide-react";
 
 const AdminSidebar = ({ onLogout }) => {
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false); // Mobile drawer state
-  const [isCollapsed, setIsCollapsed] = useState(false); // Desktop collapse state
+  const [isCollapsed, setIsCollapsed] = useState(false);
+  const [isMobileOpen, setIsMobileOpen] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -36,6 +37,7 @@ const AdminSidebar = ({ onLogout }) => {
   };
 
   const activeTab = getActiveTab(location.pathname);
+  
   const menuItems = [
     { name: "Dashboard", icon: LayoutDashboard, path: "/admin" },
     { name: "Users", icon: Users, path: "/admin/users" },
@@ -46,32 +48,46 @@ const AdminSidebar = ({ onLogout }) => {
     { name: "Messages", icon: MessageSquare, path: "/admin/messages" },
   ];
 
-  // Close sidebar when clicking outside on mobile
-  const handleOverlayClick = () => {
-    setIsSidebarOpen(false);
+  const handleMobileMenuClick = () => {
+    setIsMobileOpen(!isMobileOpen);
+  };
+
+  const handleCloseMobileMenu = () => {
+    setIsMobileOpen(false);
   };
 
   return (
     <>
+      {/* Mobile Menu Button - Fixed at top left */}
+      <button
+        onClick={handleMobileMenuClick}
+        className="fixed top-2 left-2 z-50 md:hidden bg-zinc-900/50 text-white p-2.5 rounded-lg shadow-lg hover:bg-slate-800 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
+        aria-label="Toggle menu"
+      >
+        <Menu className="w-3 h-3" />
+      </button>
+
       {/* Mobile Overlay */}
-      {isSidebarOpen && (
+      {isMobileOpen && (
         <div
-          className="fixed inset-0 bg-black/50 z-20 md:hidden backdrop-blur-sm transition-opacity"
-          onClick={handleOverlayClick}
+          className="fixed inset-0 bg-black/60 z-40 md:hidden backdrop-blur-sm transition-opacity duration-300"
+          onClick={handleCloseMobileMenu}
         />
       )}
 
       {/* Sidebar Container */}
       <aside
         className={`
-          fixed md:relative z-30 h-full bg-slate-900 text-white flex flex-col transition-all duration-300 ease-in-out shadow-xl
-          ${isSidebarOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"}
-          ${isCollapsed ? "w-20" : "w-72"}
+          fixed md:relative z-50 h-full bg-slate-900 text-white flex flex-col transition-all duration-300 ease-in-out shadow-xl
+          ${isMobileOpen ? "translate-x-0" : "-translate-x-full"}
+          md:translate-x-0
+          ${isCollapsed ? "md:w-20" : "md:w-72"}
+          w-72
         `}
       >
         {/* Header */}
         <div className="flex items-center justify-between h-16 px-6 border-b border-slate-700 bg-slate-900">
-          {!isCollapsed && (
+          {(!isCollapsed || isMobileOpen) && (
             <div className="flex items-center space-x-2">
               <div className="bg-blue-600 p-1.5 rounded-lg">
                 <Home className="w-5 h-5 text-white" />
@@ -81,22 +97,26 @@ const AdminSidebar = ({ onLogout }) => {
               </span>
             </div>
           )}
-          <button
-            onClick={() => setIsSidebarOpen(false)}
-            className="md:hidden p-1 rounded hover:bg-slate-800 text-slate-400"
-          >
-            <X className="w-6 h-6" />
-          </button>
-          <button
-            onClick={() => setIsCollapsed(!isCollapsed)}
-            className="hidden md:block p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-white transition-colors"
-          >
-            {isCollapsed ? (
-              <ChevronRight className="w-5 h-5" />
-            ) : (
-              <ChevronLeft className="w-5 h-5" />
-            )}
-          </button>
+          <div className="flex items-center gap-2">
+            {/* Mobile close button */}
+            <button
+              onClick={handleCloseMobileMenu}
+              className="md:hidden p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-white transition-colors"
+            >
+              <X className="w-6 h-6" />
+            </button>
+            {/* Desktop collapse button */}
+            <button
+              onClick={() => setIsCollapsed(!isCollapsed)}
+              className="hidden md:block p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-white transition-colors"
+            >
+              {isCollapsed ? (
+                <ChevronRight className="w-5 h-5" />
+              ) : (
+                <ChevronLeft className="w-5 h-5" />
+              )}
+            </button>
+          </div>
         </div>
 
         {/* Navigation Links */}
@@ -107,7 +127,7 @@ const AdminSidebar = ({ onLogout }) => {
                 key={item.name}
                 onClick={() => {
                   navigate(item.path);
-                  setIsSidebarOpen(false); // Close mobile drawer on click
+                  setIsMobileOpen(false);
                 }}
                 className={`
                   w-full flex items-center px-3 py-3 text-sm font-medium rounded-xl transition-all duration-200 group
@@ -119,14 +139,15 @@ const AdminSidebar = ({ onLogout }) => {
                 `}
               >
                 <item.icon
-                  className={`w-5 h-5 shrink-0 ${activeTab === item.name ? "text-white" : "text-slate-500 group-hover:text-white"}`}
+                  className={`w-5 h-5 shrink-0 ${
+                    activeTab === item.name 
+                      ? "text-white" 
+                      : "text-slate-500 group-hover:text-white"
+                  }`}
                 />
-                {!isCollapsed && (
+                {(!isCollapsed || isMobileOpen) && (
                   <span className="ml-3 whitespace-nowrap">{item.name}</span>
                 )}
-                {/* {activeTab === item.name && !isCollapsed && (
-                  <div className="ml-auto w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
-                )} */}
               </button>
             ))}
           </nav>
@@ -141,23 +162,32 @@ const AdminSidebar = ({ onLogout }) => {
               </div>
               <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-slate-900 rounded-full"></div>
             </div>
-            {!isCollapsed && (
+            {(!isCollapsed || isMobileOpen) && (
               <div className="ml-3">
                 <p className="text-sm font-medium text-white">Admin User</p>
                 <p className="text-xs text-slate-400">Super Admin</p>
               </div>
             )}
-            {!isCollapsed && (
-              <button className="ml-auto text-slate-400 hover:text-white">
+            {(!isCollapsed || isMobileOpen) && (
+              <button 
+                onClick={() => {
+                  navigate("/admin/settings");
+                  setIsMobileOpen(false);
+                }}
+                className="ml-auto text-slate-400 hover:text-white transition-colors"
+              >
                 <Settings className="w-5 h-5" />
               </button>
             )}
           </div>
 
-          {!isCollapsed && (
+          {(!isCollapsed || isMobileOpen) && (
             <button
               className="mt-4 w-full flex items-center justify-center px-4 py-2 text-sm font-medium text-red-400 bg-red-500/10 hover:bg-red-500/20 rounded-lg transition-colors border border-red-500/20"
-              onClick={onLogout}
+              onClick={() => {
+                onLogout();
+                setIsMobileOpen(false);
+              }}
             >
               <LogOut className="w-4 h-4 mr-2" />
               Sign Out
