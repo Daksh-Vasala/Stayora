@@ -45,10 +45,10 @@ const MessagesPage = () => {
   const sendMessage = () => {
     if (!input.trim() || !selectedChat) return;
 
-    const receiver = selectedChat.members.find((m) => m._id !== user.id)?._id;
+    const receiver = selectedChat.members.find((m) => m._id !== user._id)?._id;
 
     socket.emit("sendMessage", {
-      sender: user.id,
+      sender: user._id,
       receiver,
       message: input,
       property: selectedChat.property,
@@ -59,8 +59,8 @@ const MessagesPage = () => {
 
   // 🔹 Register socket
   useEffect(() => {
-    if (user?.id) {
-      socket.emit("register", user.id);
+    if (user?._id) {
+      socket.emit("register", user._id);
     }
   }, [user]);
 
@@ -113,7 +113,7 @@ const MessagesPage = () => {
 
   // Filter chats based on search
   const filteredChats = chats.filter((chat) => {
-    const otherUser = chat.members?.find((m) => m._id !== user.id);
+    const otherUser = chat.members?.find((m) => m._id !== user._id);
     return otherUser?.name?.toLowerCase().includes(searchQuery.toLowerCase());
   });
 
@@ -143,7 +143,7 @@ const MessagesPage = () => {
         {/* Chat List */}
         <div className="flex-1 overflow-y-auto">
           {filteredChats.map((chat) => {
-            const otherUser = chat.members?.find((m) => m._id !== user.id);
+            const otherUser = chat.members?.find((m) => m._id !== user._id);
 
             // Get last message preview
             const lastMessagePreview =
@@ -264,17 +264,17 @@ const MessagesPage = () => {
 
                 <div className="w-10 h-10 rounded-full bg-linear-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white font-semibold shadow-sm">
                   {selectedChat.members
-                    ?.find((m) => m._id !== user.id)
+                    ?.find((m) => m._id !== user._id)
                     ?.name?.[0]?.toUpperCase()}
                 </div>
 
                 <div>
                   <p className="text-sm font-semibold text-gray-900">
-                    {selectedChat.members?.find((m) => m._id !== user.id)?.name}
+                    {selectedChat.members?.find((m) => m._id !== user._id)?.name}
                   </p>
                   {isAdmin && (
                     <p className="text-xs text-gray-500 mt-0.5">
-                      {selectedChat.members?.find((m) => m._id !== user.id)
+                      {selectedChat.members?.find((m) => m._id !== user._id)
                         ?.role === "host"
                         ? "Host"
                         : "Guest"}
@@ -291,7 +291,7 @@ const MessagesPage = () => {
             {/* Messages Area */}
             <div className="flex-1 overflow-y-auto px-5 py-5 space-y-3 bg-gray-50">
               {messages.map((msg, idx) => {
-                const isOwn = msg.sender === user.id;
+                const isOwn = msg.sender === user._id;
                 const sender = selectedChat.members?.find(
                   (m) => m._id === msg.sender,
                 );

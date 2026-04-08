@@ -14,7 +14,19 @@ const chatSocket = (io) => {
     socket.on("sendMessage", async ({ sender, receiver, message, property }) => {
       try {
         console.log("📩", sender, "→", receiver, ":", message);
+        
+        // Validate inputs
+        if (!sender || !receiver) {
+          console.error("Invalid sender or receiver");
+          return;
+        }
+
         const chat = await findOrCreateChat(sender, receiver, property);
+
+        if (!chat) {
+          console.error("Failed to find or create chat");
+          return;
+        }
 
         const newMessage = await Message.create({
           chat: chat._id,
@@ -32,7 +44,7 @@ const chatSocket = (io) => {
         io.to(receiver).emit("receiveMessage", newMessage);
         io.to(sender).emit("receiveMessage", newMessage);
       } catch (error) {
-        console.log(error);
+        console.error("Error in sendMessage:", error);
       }
     });
 
