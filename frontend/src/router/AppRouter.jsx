@@ -33,6 +33,7 @@ import ProfilePage from "../pages/ProfilePage";
 import VerificationPage from "../pages/VerificationPage";
 import ChangePassword from "../pages/ChangePassword";
 import GuestBookingDetailPage from "../pages/guest/GuestBookingDetailPage";
+import BecomeHostPage from "../pages/guest/BecomeHostPage";
 
 const router = createBrowserRouter([
   // PUBLIC ROUTES
@@ -98,6 +99,14 @@ const router = createBrowserRouter([
         element: (
           <ProtectedRoute allowedRoles={["guest", "host", "admin"]}>
             <ChangePassword />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "become-host",
+        element: (
+          <ProtectedRoute allowedRoles={["guest"]}>
+            <BecomeHostPage />
           </ProtectedRoute>
         ),
       },

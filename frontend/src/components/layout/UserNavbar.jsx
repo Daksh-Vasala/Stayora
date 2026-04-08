@@ -96,7 +96,7 @@ function UserNavbar({ userRole, onLogout, user }) {
           {/* Guest CTA */}
           {userRole === "guest" && (
             <NavLink
-              to="/host/become-host"
+              to="/become-host"
               className="hidden md:block bg-blue-600 text-white text-sm font-semibold px-5 py-2 rounded-full hover:bg-blue-700"
             >
               Become a Host

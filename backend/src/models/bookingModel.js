@@ -125,11 +125,4 @@ const bookingSchema = new Schema(
   { timestamps: true }
 );
 
-// ========== ADD INDEXES FOR BETTER PERFORMANCE ==========
-bookingSchema.index({ guest: 1, createdAt: -1 });
-bookingSchema.index({ host: 1, createdAt: -1 });
-bookingSchema.index({ status: 1 });
-bookingSchema.index({ cancelledAt: 1 });
-bookingSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 }); // Auto-delete expired pending bookings
-
 module.exports = mongoose.model("Booking", bookingSchema);
