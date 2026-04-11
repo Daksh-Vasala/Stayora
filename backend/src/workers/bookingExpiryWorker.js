@@ -15,7 +15,18 @@ function startBookingExpiryWorker() {
           cancelledAt: now,
           cancelledBy: "system",
           cancellationReason: "Payment timeout",
-        }
+        },
+      );
+
+      await Booking.updateMany(
+        {
+          status: "confirmed",
+          checkOut: { $lt: now },
+        },
+        {
+          status: "completed",
+          completedAt: now,
+        },
       );
 
       if (result.modifiedCount > 0) {

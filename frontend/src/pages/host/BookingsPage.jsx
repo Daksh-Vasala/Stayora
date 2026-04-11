@@ -5,7 +5,7 @@ import axios from "axios";
 const STATUS_CONFIG = {
   confirmed: {
     label: "Confirmed",
-    cls: "bg-green-100 text-green-700",
+    cls: "bg-blue-100 text-blue-700",
     icon: CheckCircle,
   },
   pending: {
@@ -17,6 +17,11 @@ const STATUS_CONFIG = {
     label: "Cancelled",
     cls: "bg-red-100 text-red-600",
     icon: XCircle,
+  },
+  completed: {
+    label: "Completed",
+    cls: "bg-green-100 text-green-600",
+    icon: CheckCircle,
   },
 };
 

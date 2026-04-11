@@ -2,9 +2,16 @@
 const express = require("express");
 const router = express.Router();
 const authMiddleware = require("../middlewares/authMiddleware");
-const allowedRoles = require("../middlewares/allowedRoles")
-const { getHostEarnings } = require("../controllers/hostController");
+const allowedRoles = require("../middlewares/allowedRoles");
+const {
+  getHostEarnings,
+  getPropertyEarnings,
+} = require("../controllers/hostController");
 
-router.get("/earnings", authMiddleware, allowedRoles("host"), getHostEarnings);
+router.use(authMiddleware);
+router.use(allowedRoles("host"));
+
+router.get("/earnings", getHostEarnings);
+router.get("/earnings/properties", getPropertyEarnings);
 
 module.exports = router;
