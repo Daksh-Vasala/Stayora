@@ -215,7 +215,7 @@ export default function ProfilePage() {
               {user?.role === "host" && (
                 <button
                   onClick={() => navigate("/host/dashboard")}
-                  className="mb-4 w-full bg-orange-600 text-white py-2 rounded-lg text-sm font-medium hover:bg-orange-700 transition"
+                  className="mb-4 mt-5 w-full bg-orange-600 text-white py-2 rounded-lg text-sm font-medium hover:bg-orange-700 transition"
                 >
                   Go to Host Dashboard →
                 </button>

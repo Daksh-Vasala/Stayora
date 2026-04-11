@@ -66,11 +66,15 @@ const bookingSchema = new Schema(
       type: String,
     },
 
-    // 🔷 Expiration for pending bookings
+    // 🔷 Expiration for pending bookings only
     expiresAt: {
       type: Date,
       default: function () {
-        return new Date(Date.now() + 15 * 60 * 1000); // 15 min
+        // Only set expiration for pending bookings
+        if (this.status === "pending") {
+          return new Date(Date.now() + 15 * 60 * 1000); // 15 minutes
+        }
+        return null;
       },
     },
 
@@ -79,8 +83,6 @@ const bookingSchema = new Schema(
       type: String,
     },
 
-    // ========== ADD THESE FIELDS ==========
-    
     // 🔷 Cancellation tracking
     cancelledAt: {
       type: Date,
@@ -122,7 +124,32 @@ const bookingSchema = new Schema(
       default: null,
     },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
+
+// ✅ TTL Index - Only auto-delete documents that are:
+// 1. Status is "pending"
+// 2. expiresAt has passed
+bookingSchema.index(
+  { expiresAt: 1 },
+  {
+    expireAfterSeconds: 0,
+    partialFilterExpression: { status: "pending" },
+  },
+);
+
+// ✅ Middleware to manage expiresAt when status changes
+bookingSchema.pre("save", function () {
+  // If status changes to confirmed, cancelled, or completed, remove expiration
+  if (this.isModified("status")) {
+    if (["confirmed", "cancelled", "completed"].includes(this.status)) {
+      this.expiresAt = null;
+    }
+    // If status changes back to pending (unlikely but possible), set new expiration
+    else if (this.status === "pending" && !this.expiresAt) {
+      this.expiresAt = new Date(Date.now() + 15 * 60 * 1000);
+    }
+  }
+});
 
 module.exports = mongoose.model("Booking", bookingSchema);

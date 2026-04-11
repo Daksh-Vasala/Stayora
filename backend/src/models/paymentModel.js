@@ -12,22 +12,40 @@ const paymentSchema = new Schema(
     guest: {
       type: Schema.Types.ObjectId,
       ref: "User",
+      required: true,
     },
 
     host: {
       type: Schema.Types.ObjectId,
       ref: "User",
+      required: true,
     },
 
     amount: {
       type: Number,
-      required: true
+      required: true,
+    },
+
+    // 🔴 Razorpay fields (MANDATORY)
+    razorpayOrderId: {
+      type: String,
+      required: true,
+      unique: true,
+    },
+
+    razorpayPaymentId: {
+      type: String,
+      ref: "Payment"
+    },
+
+    razorpaySignature: {
+      type: String,
     },
 
     paymentStatus: {
       type: String,
-      enum: ["pending", "paid", "failed", "refunded"],
-      default: "pending",
+      enum: ["created", "paid", "failed", "refunded"],
+      default: "created",
     },
 
     paymentMethod: {
@@ -35,7 +53,7 @@ const paymentSchema = new Schema(
       enum: ["card", "upi", "wallet"],
     },
   },
-  { timestamps: true },
+  { timestamps: true }
 );
 
 module.exports = mongoose.model("Payment", paymentSchema);

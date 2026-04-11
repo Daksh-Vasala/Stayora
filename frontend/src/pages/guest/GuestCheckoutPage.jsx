@@ -18,12 +18,12 @@ import {
   Clock,
   User,
 } from "lucide-react";
+import PaymentButton from "../../components/layout/PaymentButton";
 
 export default function GuestCheckoutPage() {
   const navigate = useNavigate();
   const { id } = useParams();
   const [loading, setLoading] = useState(false);
-  const [processing, setProcessing] = useState(false);
   const [booking, setBooking] = useState(null);
   const [error, setError] = useState(null);
   const [paymentMethod, setPaymentMethod] = useState("card");
@@ -47,33 +47,6 @@ export default function GuestCheckoutPage() {
     }
   };
 
-  const handleConfirmPayment = async () => {
-    if (!paymentMethod) {
-      alert("Please select a payment method");
-      return;
-    }
-
-    if (!confirm(`Confirm payment of ₹${booking?.totalPrice?.toLocaleString()}?`)) {
-      return;
-    }
-
-    try {
-      setProcessing(true);
-      const response = await axios.post(`/bookings/${id}/pay`, {
-        paymentMethod,
-      });
-
-      // Redirect to success page
-      navigate(`/booking/success/${response.data.data._id}`, {
-        state: { booking: response.data.data },
-      });
-    } catch (err) {
-      console.error("Error processing payment:", err);
-      setError(err.response?.data?.message || "Failed to process payment. Please try again.");
-      setProcessing(false);
-    }
-  };
-
   // Calculate nights
   const calculateNights = () => {
     if (!booking) return 0;
@@ -84,23 +57,20 @@ export default function GuestCheckoutPage() {
     return diffDays;
   };
 
-  // Calculate breakdown
+  // Calculate breakdown (only subtotal + tax)
   const calculateBreakdown = () => {
     if (!booking) return null;
     
     const nights = calculateNights();
     const subtotal = booking.property.pricePerNight * nights;
-    const cleaningFee = 500; // Example fixed fee
-    const serviceFee = Math.round(subtotal * 0.10); // 10% service fee
-    const taxes = Math.round(subtotal * 0.05); // 5% tax
+    const taxRate = 0.05; // 5% tax
+    const taxes = Math.round(subtotal * taxRate);
     
     return {
       nights,
       subtotal,
-      cleaningFee,
-      serviceFee,
       taxes,
-      total: subtotal + cleaningFee + serviceFee + taxes,
+      total: subtotal + taxes,
     };
   };
 
@@ -282,7 +252,7 @@ export default function GuestCheckoutPage() {
                 <div>
                   <h4 className="text-sm font-semibold text-gray-900 mb-1">Free cancellation</h4>
                   <p className="text-xs text-gray-600">
-                    Cancel up to 7 days before check-in for a full refund. Service fees are non-refundable.
+                    Cancel up to 7 days before check-in for a full refund.
                   </p>
                 </div>
               </div>
@@ -306,21 +276,7 @@ export default function GuestCheckoutPage() {
                 </div>
                 
                 <div className="flex justify-between text-sm">
-                  <span className="text-gray-600">Cleaning fee</span>
-                  <span className="text-gray-900">
-                    ₹{breakdown?.cleaningFee?.toLocaleString()}
-                  </span>
-                </div>
-                
-                <div className="flex justify-between text-sm">
-                  <span className="text-gray-600">Service fee</span>
-                  <span className="text-gray-900">
-                    ₹{breakdown?.serviceFee?.toLocaleString()}
-                  </span>
-                </div>
-                
-                <div className="flex justify-between text-sm">
-                  <span className="text-gray-600">Taxes</span>
+                  <span className="text-gray-600">Tax (GST 5%)</span>
                   <span className="text-gray-900">
                     ₹{breakdown?.taxes?.toLocaleString()}
                   </span>
@@ -333,92 +289,25 @@ export default function GuestCheckoutPage() {
                       ₹{booking.totalPrice?.toLocaleString()}
                     </span>
                   </div>
-                  {booking.totalPrice !== breakdown?.total && (
-                    <p className="text-xs text-gray-400 mt-1">
-                      *Includes all fees and taxes
-                    </p>
-                  )}
                 </div>
               </div>
 
               {/* Payment Status */}
-              <div className="mt-4 pt-4 border-t border-gray-100">
+              <div className="mt-4 pt-4 mb-4 border-t border-gray-100">
                 <div className="flex justify-between items-center">
                   <span className="text-sm text-gray-600">Payment Status</span>
                   <span className={`text-sm font-medium capitalize ${
-                    booking.paymentStatus === 'paid' ? 'text-green-600' : 'text-red-600'
+                    booking.paymentStatus === 'paid' ? 'text-green-600' : 'text-yellow-600'
                   }`}>
-                    {booking.paymentStatus}
+                    {booking.paymentStatus === 'paid' ? 'Paid' : 'Pending'}
                   </span>
                 </div>
               </div>
 
-              {/* Payment Methods - Only show if not paid */}
               {booking.paymentStatus !== 'paid' && !isExpired && (
                 <>
-                  <div className="mt-6">
-                    <h4 className="text-sm font-semibold text-gray-900 mb-3">Payment method</h4>
-                    <div className="space-y-2">
-                      <label className="flex items-center gap-3 p-3 border border-gray-200 rounded-xl cursor-pointer hover:bg-gray-50 transition">
-                        <input
-                          type="radio"
-                          name="paymentMethod"
-                          value="card"
-                          checked={paymentMethod === "card"}
-                          onChange={(e) => setPaymentMethod(e.target.value)}
-                          className="text-blue-600 focus:ring-blue-500"
-                        />
-                        <CreditCard size={18} className="text-gray-500" />
-                        <span className="text-sm text-gray-700">Credit / Debit Card</span>
-                      </label>
-                      
-                      <label className="flex items-center gap-3 p-3 border border-gray-200 rounded-xl cursor-pointer hover:bg-gray-50 transition">
-                        <input
-                          type="radio"
-                          name="paymentMethod"
-                          value="upi"
-                          checked={paymentMethod === "upi"}
-                          onChange={(e) => setPaymentMethod(e.target.value)}
-                          className="text-blue-600 focus:ring-blue-500"
-                        />
-                        <Wallet size={18} className="text-gray-500" />
-                        <span className="text-sm text-gray-700">UPI / Google Pay</span>
-                      </label>
-                      
-                      <label className="flex items-center gap-3 p-3 border border-gray-200 rounded-xl cursor-pointer hover:bg-gray-50 transition">
-                        <input
-                          type="radio"
-                          name="paymentMethod"
-                          value="netbanking"
-                          checked={paymentMethod === "netbanking"}
-                          onChange={(e) => setPaymentMethod(e.target.value)}
-                          className="text-blue-600 focus:ring-blue-500"
-                        />
-                        <Lock size={18} className="text-gray-500" />
-                        <span className="text-sm text-gray-700">Net Banking</span>
-                      </label>
-                    </div>
-                  </div>
-
                   {/* Pay Button */}
-                  <button
-                    onClick={handleConfirmPayment}
-                    disabled={processing || !paymentMethod}
-                    className="w-full mt-6 bg-blue-600 text-white py-3 rounded-xl font-semibold hover:bg-blue-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-                  >
-                    {processing ? (
-                      <>
-                        <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
-                        <span>Processing...</span>
-                      </>
-                    ) : (
-                      <>
-                        <CheckCircle size={18} />
-                        <span>Pay ₹{booking.totalPrice?.toLocaleString()}</span>
-                        <ChevronRight size={16} />
-                      </>
-                    )}
-                  </button>
+                  <PaymentButton bookingId={booking._id} amount={booking.totalPrice} />
                 </>
               )}
 
@@ -429,7 +318,7 @@ export default function GuestCheckoutPage() {
                   <p className="text-sm font-medium text-green-800">Payment Completed</p>
                   <p className="text-xs text-green-600 mt-1">Your booking is confirmed</p>
                   <button
-                    onClick={() => navigate(`/booking/success/${booking._id}`)}
+                    onClick={() => navigate(`/bookings/success/${booking._id}`)}
                     className="mt-3 text-sm text-green-700 font-medium hover:underline"
                   >
                     View Booking Details →

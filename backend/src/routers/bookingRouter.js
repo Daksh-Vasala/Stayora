@@ -23,4 +23,7 @@ router.patch("/:id/cancel", authMiddleware, bookingController.cancelBooking);
 
 router.delete("/:id", authMiddleware, bookingController.deleteBooking);
 
+// routes/bookingRoutes.js
+router.patch("/:id/confirm-payment", authMiddleware, bookingController.confirmPayment);
+
 module.exports = router;

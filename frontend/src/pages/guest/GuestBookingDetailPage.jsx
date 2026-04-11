@@ -25,6 +25,9 @@ import {
   Mail,
   Download,
   CreditCard,
+  Star,
+  MessageCircle,
+  User,
 } from "lucide-react";
 
 const amenityIcons = {
@@ -95,6 +98,21 @@ export default function GuestBookingDetailPage() {
     }
   };
 
+  const handleMessageHost = async () => {
+    try {
+      const { data } = await axios.post("/chats", {
+        receiverId: booking.host._id,
+        property: booking.property._id,
+      });
+      navigate("/messages", {
+        state: { chatId: data._id },
+      });
+    } catch (error) {
+      console.error(error);
+      toast.error("Failed to start conversation");
+    }
+  };
+
   const getCancelInfo = () => {
     if (!booking) return null;
     const daysLeft = Math.ceil((new Date(booking.checkIn) - new Date()) / (86400000));
@@ -109,12 +127,10 @@ export default function GuestBookingDetailPage() {
       return { canCancel: false, msg: "Cannot cancel after check-in", color: "gray" };
     }
 
-    // Pending unpaid - cancel for free
     if (booking.status === "pending" && booking.paymentStatus === "unpaid") {
       return { canCancel: true, msg: "Cancel for free (no payment made)", color: "green", refund: 0 };
     }
 
-    // Confirmed with payment - refund based on days
     if (booking.status === "confirmed" && booking.paymentStatus === "paid") {
       if (daysLeft > 7) {
         return { canCancel: true, msg: `100% refund of ₹${booking.totalPrice}`, color: "green", refund: 100 };
@@ -169,6 +185,9 @@ export default function GuestBookingDetailPage() {
   }
 
   const property = booking.property;
+  const host = booking.host;
+  const subtotal = property.pricePerNight * nights;
+  const taxes = Math.round(subtotal * 0.05);
 
   return (
     <div className="min-h-screen bg-gray-50 py-8">
@@ -289,17 +308,17 @@ export default function GuestBookingDetailPage() {
               <h3 className="font-semibold mb-3">Price Summary</h3>
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between">
-                  <span>₹{property.pricePerNight} × {nights} nights</span>
-                  <span>₹{property.pricePerNight * nights}</span>
+                  <span>₹{property.pricePerNight.toLocaleString()} × {nights} nights</span>
+                  <span>₹{subtotal.toLocaleString()}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span>Service fee</span>
-                  <span>₹0</span>
+                  <span>Tax (GST 5%)</span>
+                  <span>₹{taxes.toLocaleString()}</span>
                 </div>
-                <div className="pt-2 mt-2">
+                <div className="pt-2 mt-2 border-t">
                   <div className="flex justify-between font-bold">
                     <span>Total</span>
-                    <span>₹{booking.totalPrice}</span>
+                    <span>₹{booking.totalPrice.toLocaleString()}</span>
                   </div>
                 </div>
               </div>
@@ -321,7 +340,6 @@ export default function GuestBookingDetailPage() {
 
               {/* Action Buttons */}
               <div className="mt-4 space-y-3">
-                {/* Pay Now Button */}
                 {showPayButton && !isExpired && (
                   <button
                     onClick={() => navigate(`/bookings/checkout/${booking._id}`)}
@@ -332,7 +350,6 @@ export default function GuestBookingDetailPage() {
                   </button>
                 )}
 
-                {/* Cancel Button */}
                 {cancelInfo.canCancel && (
                   <button
                     onClick={() => setShowCancelModal(true)}
@@ -343,7 +360,6 @@ export default function GuestBookingDetailPage() {
                   </button>
                 )}
 
-                {/* Report Button */}
                 {canReport && (
                   <button
                     onClick={() => setShowReportModal(true)}
@@ -353,7 +369,6 @@ export default function GuestBookingDetailPage() {
                   </button>
                 )}
 
-                {/* Download Invoice */}
                 <button
                   onClick={() => window.print()}
                   className="w-full py-2.5 text-gray-600 rounded-lg font-medium hover:bg-gray-50 transition"
@@ -362,7 +377,6 @@ export default function GuestBookingDetailPage() {
                 </button>
               </div>
 
-              {/* Cancellation Policy Info */}
               {cancelInfo.canCancel && cancelInfo.refund > 0 && (
                 <div className="mt-4 p-3 rounded-lg text-xs bg-blue-50 text-blue-700">
                   <p className="font-medium mb-1">Cancellation Policy</p>
@@ -371,25 +385,53 @@ export default function GuestBookingDetailPage() {
               )}
             </div>
 
-            {/* Host Info */}
+            {/* Host Info Card - Enhanced */}
             <div className="bg-white rounded-xl shadow-sm p-5">
-              <h3 className="font-semibold mb-3">Host Information</h3>
-              <div className="flex gap-3">
-                <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center font-bold">
-                  {booking.host?.name?.[0] || "H"}
+              <h3 className="font-semibold mb-4">Host Information</h3>
+              <div className="flex items-start gap-4">
+                <div className="w-14 h-14 rounded-full bg-linear-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white font-bold text-xl shadow-md">
+                  {host?.name?.[0]?.toUpperCase() || "H"}
                 </div>
-                <div>
-                  <p className="font-medium">{booking.host?.name || "Host"}</p>
-                  <div className="flex gap-2 mt-1">
-                    <a href={`mailto:${booking.host?.email}`} className="text-xs text-blue-600">
-                      <Mail size={12} className="inline" /> Email
-                    </a>
-                    {booking.host?.phone && (
-                      <a href={`tel:${booking.host?.phone}`} className="text-xs text-blue-600">
-                        <Phone size={12} className="inline" /> Call
+                <div className="flex-1">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <h4 className="font-semibold text-gray-900">{host?.name || "Host"}</h4>
+                    <div className="flex items-center gap-1">
+                      <Star size={12} className="fill-yellow-400 text-yellow-400" />
+                      <span className="text-xs text-gray-600">4.9</span>
+                    </div>
+                  </div>
+                  <p className="text-xs text-gray-500 mt-0.5">Joined {host?.createdAt ? new Date(host.createdAt).getFullYear() : "2024"}</p>
+                  
+                  <div className="mt-3 space-y-2">
+                    {host?.phone && (
+                      <div className="flex items-center gap-2 text-sm">
+                        <Phone size={14} className="text-gray-400" />
+                        <a href={`tel:${host.phone}`} className="text-gray-600 hover:text-blue-600">
+                          {host.phone}
+                        </a>
+                      </div>
+                    )}
+                    <div className="flex items-center gap-2 text-sm">
+                      <Mail size={14} className="text-gray-400" />
+                      <a href={`mailto:${host?.email}`} className="text-gray-600 hover:text-blue-600">
+                        {host?.email}
                       </a>
+                    </div>
+                    {host?.location && (
+                      <div className="flex items-center gap-2 text-sm">
+                        <MapPin size={14} className="text-gray-400" />
+                        <span className="text-gray-600">{host.location}</span>
+                      </div>
                     )}
                   </div>
+
+                  <button
+                    onClick={handleMessageHost}
+                    className="mt-4 w-full flex items-center justify-center gap-2 py-2.5 rounded-lg border border-gray-200 text-sm font-medium text-gray-700 hover:bg-gray-50 hover:border-gray-300 transition"
+                  >
+                    <MessageCircle size={14} />
+                    Message Host
+                  </button>
                 </div>
               </div>
             </div>
