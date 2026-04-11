@@ -2,6 +2,9 @@ const express = require("express");
 const app = express();
 const cors = require("cors");
 const path = require("path");
+const startBookingExpiryWorker = require("./src/workers/bookingExpiryWorker");
+
+// start worker AFTER DB connection
 
 const cookieParser = require("cookie-parser");
 app.use(
@@ -28,6 +31,7 @@ const messageRouter = require("./src/routers/messageRouter.js");
 const paymentRouter = require("./src/routers/paymentRouter.js");
 const chatRouter = require("./src/routers/chatRouter.js");
 const adminRouter = require("./src/routers/adminRouter.js");
+const hostRouter = require("./src/routers/hostRouter.js");
 
 app.use("/user", userRouter);
 app.use("/property", propertyRouter);
@@ -37,5 +41,7 @@ app.use("/messages", messageRouter);
 app.use("/payments", paymentRouter);
 app.use("/chats", chatRouter);
 app.use("/admin", adminRouter);
+app.use("/host", hostRouter);
+startBookingExpiryWorker();
 
 module.exports = app;

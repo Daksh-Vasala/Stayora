@@ -66,13 +66,12 @@ const bookingSchema = new Schema(
       type: String,
     },
 
-    // 🔷 Expiration for pending bookings only
+    // 🔷 Expiration ONLY for pending bookings
     expiresAt: {
       type: Date,
       default: function () {
-        // Only set expiration for pending bookings
         if (this.status === "pending") {
-          return new Date(Date.now() + 15 * 60 * 1000); // 15 minutes
+          return new Date(Date.now() + 15 * 60 * 1000); // 15 min
         }
         return null;
       },
@@ -105,51 +104,47 @@ const bookingSchema = new Schema(
       default: null,
     },
 
-    // 🔷 Cancellation message (what user sees)
+    // 🔷 Cancellation message
     cancellationMessage: {
       type: String,
       default: "",
     },
 
-    // 🔷 Who cancelled (user, host, or admin)
+    // 🔷 Who cancelled
     cancelledBy: {
       type: String,
       enum: ["guest", "host", "admin", null],
       default: null,
     },
 
-    // 🔷 Completed at (when trip ended)
+    // 🔷 Completed at
     completedAt: {
       type: Date,
       default: null,
     },
   },
-  { timestamps: true },
+  { timestamps: true }
 );
 
-// ✅ TTL Index - Only auto-delete documents that are:
-// 1. Status is "pending"
-// 2. expiresAt has passed
-bookingSchema.index(
-  { expiresAt: 1 },
-  {
-    expireAfterSeconds: 0,
-    partialFilterExpression: { status: "pending" },
-  },
-);
 
-// ✅ Middleware to manage expiresAt when status changes
+// ✅ Middleware to manage expiresAt correctly
 bookingSchema.pre("save", function () {
-  // If status changes to confirmed, cancelled, or completed, remove expiration
+  // If status is changed
   if (this.isModified("status")) {
+    // Remove expiry if not pending
     if (["confirmed", "cancelled", "completed"].includes(this.status)) {
       this.expiresAt = null;
     }
-    // If status changes back to pending (unlikely but possible), set new expiration
-    else if (this.status === "pending" && !this.expiresAt) {
+
+    // If somehow set back to pending, reassign expiry
+    if (this.status === "pending" && !this.expiresAt) {
       this.expiresAt = new Date(Date.now() + 15 * 60 * 1000);
     }
   }
 });
+
+
+// ✅ (Optional but recommended) Index for expiry queries
+bookingSchema.index({ status: 1, expiresAt: 1 });
 
 module.exports = mongoose.model("Booking", bookingSchema);
