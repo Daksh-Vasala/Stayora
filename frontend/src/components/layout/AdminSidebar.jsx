@@ -6,7 +6,6 @@ import {
   Home,
   DollarSign,
   MessageSquare,
-  Settings,
   ShieldAlert,
   LogOut,
   ChevronLeft,
@@ -167,17 +166,6 @@ const AdminSidebar = ({ onLogout }) => {
                 <p className="text-sm font-medium text-white">Admin User</p>
                 <p className="text-xs text-slate-400">Super Admin</p>
               </div>
-            )}
-            {(!isCollapsed || isMobileOpen) && (
-              <button 
-                onClick={() => {
-                  navigate("/admin/settings");
-                  setIsMobileOpen(false);
-                }}
-                className="ml-auto text-slate-400 hover:text-white transition-colors"
-              >
-                <Settings className="w-5 h-5" />
-              </button>
             )}
           </div>
 

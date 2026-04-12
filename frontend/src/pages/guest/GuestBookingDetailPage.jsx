@@ -1,4 +1,4 @@
-// pages/BookingDetailPage.jsx - Updated with your controllers
+// pages/BookingDetailPage.jsx - Updated with Dispute
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
@@ -20,7 +20,6 @@ import {
   CheckCircle,
   XCircle,
   AlertTriangle,
-  Flag,
   Phone,
   Mail,
   Download,
@@ -28,6 +27,7 @@ import {
   Star,
   MessageCircle,
   Edit3,
+  AlertOctagon,
 } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
 
@@ -56,9 +56,13 @@ export default function GuestBookingDetailPage() {
   const [cancelling, setCancelling] = useState(false);
   const [showCancelModal, setShowCancelModal] = useState(false);
   const [showReportModal, setShowReportModal] = useState(false);
+  const [showDisputeModal, setShowDisputeModal] = useState(false);
   const [reportReason, setReportReason] = useState("");
-  const { user } = useAuth()
-  
+  const [disputeReason, setDisputeReason] = useState("");
+  const [submittingDispute, setSubmittingDispute] = useState(false);
+  const [existingDispute, setExistingDispute] = useState(null);
+  const { user } = useAuth();
+
   // Review states
   const [showReviewModal, setShowReviewModal] = useState(false);
   const [existingReview, setExistingReview] = useState(null);
@@ -72,6 +76,7 @@ export default function GuestBookingDetailPage() {
   useEffect(() => {
     fetchBooking();
     checkExistingReview();
+    checkExistingDispute();
   }, [id]);
 
   const fetchBooking = async () => {
@@ -96,8 +101,19 @@ export default function GuestBookingDetailPage() {
         });
       }
     } catch (err) {
-      // No review exists
       console.log("No review found");
+    }
+  };
+
+  const checkExistingDispute = async () => {
+    try {
+      const { data } = await axios.get(`/disputes/booking/${id}`);
+      if (data.dispute) {
+        setExistingDispute(data.dispute);
+      }
+      console.log(data);
+    } catch (err) {
+      console.log("No dispute found");
     }
   };
 
@@ -127,26 +143,52 @@ export default function GuestBookingDetailPage() {
     }
   };
 
+  const handleDispute = async () => {
+    if (!disputeReason.trim()) {
+      toast.error("Please describe your issue");
+      return;
+    }
+    if (disputeReason.length < 10) {
+      toast.error("Please provide more details (minimum 10 characters)");
+      return;
+    }
+
+    try {
+      setSubmittingDispute(true);
+      const { data } = await axios.post(`/disputes/${id}`, {
+        reason: disputeReason,
+      });
+      toast.success(
+        "Dispute raised successfully! Admin will review your case.",
+      );
+      setShowDisputeModal(false);
+      setDisputeReason("");
+      checkExistingDispute();
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Failed to raise dispute");
+    } finally {
+      setSubmittingDispute(false);
+    }
+  };
+
   const handleMessageHost = async () => {
-  if (!user) {
-    toast.error("Login first");
-    return navigate("/login");
-  }
-  if (property?.host?._id === user.id) {
-    return toast.info("This is your property");
-  }
-  try {
-    // Your createChat endpoint already checks for existing chat!
-    // It returns existing chat if found, or creates a new one
-    const { data } = await axios.post("/chats", {
-      receiverId: property.host._id,
-      property: property._id,
-    });
-    navigate("/messages", { state: { chatId: data._id } });
-  } catch (error) {
-    toast.error(error?.response?.data?.message || "Something went wrong");
-  }
-};
+    if (!user) {
+      toast.error("Login first");
+      return navigate("/login");
+    }
+    if (booking?.host?._id === user.id) {
+      return toast.info("This is your property");
+    }
+    try {
+      const { data } = await axios.post("/chats", {
+        receiverId: booking.host._id,
+        property: booking.property._id,
+      });
+      navigate("/messages", { state: { chatId: data._id } });
+    } catch (error) {
+      toast.error(error?.response?.data?.message || "Something went wrong");
+    }
+  };
 
   const handleSubmitReview = async () => {
     if (reviewData.rating === 0) {
@@ -160,26 +202,24 @@ export default function GuestBookingDetailPage() {
 
     try {
       setSubmittingReview(true);
-      
+
       if (existingReview) {
-        // Update existing review
         await axios.put(`/reviews/${existingReview._id}`, {
           rating: reviewData.rating,
           comment: reviewData.comment,
         });
         toast.success("Review updated successfully!");
       } else {
-        // Create new review - using booking ID from params
         await axios.post(`/reviews/${id}`, {
           rating: reviewData.rating,
           comment: reviewData.comment,
         });
         toast.success("Review submitted successfully!");
       }
-      
+
       setShowReviewModal(false);
-      checkExistingReview(); // Refresh to show the review
-      fetchBooking(); // Refresh booking to update any review-related data
+      checkExistingReview();
+      fetchBooking();
     } catch (err) {
       toast.error(err.response?.data?.message || "Failed to submit review");
     } finally {
@@ -189,35 +229,69 @@ export default function GuestBookingDetailPage() {
 
   const getCancelInfo = () => {
     if (!booking) return null;
-    const daysLeft = Math.ceil((new Date(booking.checkIn) - new Date()) / (86400000));
+    const daysLeft = Math.ceil(
+      (new Date(booking.checkIn) - new Date()) / 86400000,
+    );
 
     if (booking.status === "cancelled") {
-      return { canCancel: false, msg: booking.cancellationMessage || "Already cancelled", color: "gray" };
+      return {
+        canCancel: false,
+        msg: booking.cancellationMessage || "Already cancelled",
+        color: "gray",
+      };
     }
     if (booking.status === "completed") {
       return { canCancel: false, msg: "Trip completed", color: "gray" };
     }
     if (new Date(booking.checkIn) < new Date()) {
-      return { canCancel: false, msg: "Cannot cancel after check-in", color: "gray" };
+      return {
+        canCancel: false,
+        msg: "Cannot cancel after check-in",
+        color: "gray",
+      };
     }
 
     if (booking.status === "pending" && booking.paymentStatus === "unpaid") {
-      return { canCancel: true, msg: "Cancel for free (no payment made)", color: "green", refund: 0 };
+      return {
+        canCancel: true,
+        msg: "Cancel for free (no payment made)",
+        color: "green",
+        refund: 0,
+      };
     }
 
     if (booking.status === "confirmed" && booking.paymentStatus === "paid") {
       if (daysLeft > 7) {
-        return { canCancel: true, msg: `100% refund of ₹${booking.totalPrice}`, color: "green", refund: 100 };
+        return {
+          canCancel: true,
+          msg: `100% refund of ₹${booking.totalPrice}`,
+          color: "green",
+          refund: 100,
+        };
       }
       if (daysLeft >= 3) {
-        return { canCancel: true, msg: `75% refund of ₹${Math.round(booking.totalPrice * 0.75)}`, color: "yellow", refund: 75 };
+        return {
+          canCancel: true,
+          msg: `75% refund of ₹${Math.round(booking.totalPrice * 0.75)}`,
+          color: "yellow",
+          refund: 75,
+        };
       }
       if (daysLeft > 0) {
-        return { canCancel: true, msg: `50% refund of ₹${Math.round(booking.totalPrice * 0.5)}`, color: "red", refund: 50 };
+        return {
+          canCancel: true,
+          msg: `50% refund of ₹${Math.round(booking.totalPrice * 0.5)}`,
+          color: "red",
+          refund: 50,
+        };
       }
     }
 
-    return { canCancel: false, msg: "Cancellation not available", color: "gray" };
+    return {
+      canCancel: false,
+      msg: "Cancellation not available",
+      color: "gray",
+    };
   };
 
   const formatDate = (d) =>
@@ -228,14 +302,20 @@ export default function GuestBookingDetailPage() {
     });
 
   const nights = booking
-    ? Math.ceil((new Date(booking.checkOut) - new Date(booking.checkIn)) / 86400000)
+    ? Math.ceil(
+        (new Date(booking.checkOut) - new Date(booking.checkIn)) / 86400000,
+      )
     : 0;
 
   const cancelInfo = getCancelInfo();
-  const canReport = ["confirmed", "completed"].includes(booking?.status);
-  const showPayButton = booking?.status === "pending" && booking?.paymentStatus === "unpaid";
-  const isExpired = booking?.expiresAt && new Date(booking.expiresAt) < new Date();
-  const canReview = booking?.status === "completed" && booking?.paymentStatus === "paid";
+  const canRaiseDispute =
+    ["confirmed", "completed"].includes(booking?.status) && !existingDispute;
+  const showPayButton =
+    booking?.status === "pending" && booking?.paymentStatus === "unpaid";
+  const isExpired =
+    booking?.expiresAt && new Date(booking.expiresAt) < new Date();
+  const canReview =
+    booking?.status === "completed" && booking?.paymentStatus === "paid";
 
   if (loading) {
     return (
@@ -251,7 +331,10 @@ export default function GuestBookingDetailPage() {
         <div className="text-center">
           <AlertTriangle size={48} className="text-red-500 mx-auto mb-4" />
           <h2 className="text-xl font-semibold">Booking not found</h2>
-          <button onClick={() => navigate("/bookings")} className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg">
+          <button
+            onClick={() => navigate("/bookings")}
+            className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg"
+          >
             Back to Bookings
           </button>
         </div>
@@ -268,7 +351,10 @@ export default function GuestBookingDetailPage() {
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="max-w-5xl mx-auto px-4">
         {/* Header */}
-        <button onClick={() => navigate(-1)} className="flex items-center gap-2 text-gray-600 mb-4 hover:text-gray-900">
+        <button
+          onClick={() => navigate(-1)}
+          className="flex items-center gap-2 text-gray-600 mb-4 hover:text-gray-900"
+        >
           <ArrowLeft size={18} /> Back
         </button>
 
@@ -277,11 +363,37 @@ export default function GuestBookingDetailPage() {
             <h1 className="text-2xl font-bold">Booking Details</h1>
             <p className="text-sm text-gray-500">ID: {booking._id.slice(-8)}</p>
           </div>
-          <div className={`flex items-center gap-2 px-3 py-1.5 rounded-full ${STATUS_STYLES[booking.status]}`}>
-            {booking.status === "pending" ? <Clock size={14} /> : <CheckCircle size={14} />}
-            <span className="text-sm font-medium capitalize">{booking.status}</span>
+          <div
+            className={`flex items-center gap-2 px-3 py-1.5 rounded-full ${STATUS_STYLES[booking.status]}`}
+          >
+            {booking.status === "pending" ? (
+              <Clock size={14} />
+            ) : (
+              <CheckCircle size={14} />
+            )}
+            <span className="text-sm font-medium capitalize">
+              {booking.status}
+            </span>
           </div>
         </div>
+
+        {/* Existing Dispute Banner */}
+        {existingDispute && (
+          <div className="mb-6 p-4 bg-orange-50 rounded-xl border border-orange-200">
+            <div className="flex items-center gap-3">
+              <AlertOctagon size={20} className="text-orange-600" />
+              <div>
+                <p className="text-sm font-medium text-orange-800">
+                  Dispute Raised
+                </p>
+                <p className="text-xs text-orange-700 mt-0.5">
+                  Your dispute has been submitted. Admin will review and contact
+                  you soon.
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Expiry Warning for Pending Payment */}
         {showPayButton && !isExpired && (
@@ -289,9 +401,12 @@ export default function GuestBookingDetailPage() {
             <div className="flex items-center gap-3">
               <Clock size={20} className="text-yellow-600" />
               <div>
-                <p className="text-sm font-medium text-yellow-800">Complete your payment</p>
+                <p className="text-sm font-medium text-yellow-800">
+                  Complete your payment
+                </p>
                 <p className="text-xs text-yellow-700 mt-0.5">
-                  Complete payment within 15 minutes or your booking will be cancelled.
+                  Complete payment within 15 minutes or your booking will be
+                  cancelled.
                 </p>
               </div>
             </div>
@@ -304,7 +419,9 @@ export default function GuestBookingDetailPage() {
             <div className="flex items-center gap-3">
               <XCircle size={20} className="text-red-600" />
               <div>
-                <p className="text-sm font-medium text-red-800">Booking Expired</p>
+                <p className="text-sm font-medium text-red-800">
+                  Booking Expired
+                </p>
                 <p className="text-xs text-red-700 mt-0.5">
                   Payment window has expired. This booking has been cancelled.
                 </p>
@@ -315,30 +432,42 @@ export default function GuestBookingDetailPage() {
 
         {/* Cancelled Banner */}
         {booking.status === "cancelled" && (
-          <div className={`mb-6 p-4 rounded-xl ${booking.refundAmount > 0 ? "bg-green-50" : "bg-red-50"}`}>
+          <div
+            className={`mb-6 p-4 rounded-xl ${booking.refundAmount > 0 ? "bg-green-50" : "bg-red-50"}`}
+          >
             <div className="flex items-center gap-3">
-              {booking.refundAmount > 0 ? <CheckCircle size={20} className="text-green-600" /> : <XCircle size={20} className="text-red-600" />}
+              {booking.refundAmount > 0 ? (
+                <CheckCircle size={20} className="text-green-600" />
+              ) : (
+                <XCircle size={20} className="text-red-600" />
+              )}
               <div>
                 <p className="text-sm font-medium">
-                  {booking.refundAmount > 0 ? `Refund: ₹${booking.refundAmount} (${booking.refundPercentage}%)` : "Booking Cancelled"}
+                  {booking.refundAmount > 0
+                    ? `Refund: ₹${booking.refundAmount} (${booking.refundPercentage}%)`
+                    : "Booking Cancelled"}
                 </p>
-                <p className="text-xs mt-0.5">{booking.cancellationMessage || "No refund applicable"}</p>
+                <p className="text-xs mt-0.5">
+                  {booking.cancellationMessage || "No refund applicable"}
+                </p>
               </div>
             </div>
           </div>
         )}
 
-        {/* Review Banner - Only show when booking is completed and paid */}
+        {/* Review Banner */}
         {canReview && (
           <div className="mb-6 p-4 bg-purple-50 rounded-xl border border-purple-100">
             <div className="flex items-center justify-between flex-wrap gap-3">
               <div className="flex items-center gap-3">
                 <Star size={20} className="text-purple-600" />
                 <div>
-                  <p className="text-sm font-medium text-purple-900">Share your experience</p>
+                  <p className="text-sm font-medium text-purple-900">
+                    Share your experience
+                  </p>
                   <p className="text-xs text-purple-700 mt-0.5">
-                    {existingReview 
-                      ? "You've already reviewed this property. You can edit your review." 
+                    {existingReview
+                      ? "You've already reviewed this property. You can edit your review."
                       : "Your feedback helps other travelers"}
                   </p>
                 </div>
@@ -363,13 +492,17 @@ export default function GuestBookingDetailPage() {
           <div className="lg:col-span-2 space-y-5">
             <div className="bg-white rounded-xl shadow-sm p-5">
               <img
-                src={property.images?.[0]?.url || "https://placehold.co/800x400?text=No+Image"}
+                src={
+                  property.images?.[0]?.url ||
+                  "https://placehold.co/800x400?text=No+Image"
+                }
                 alt={property.title}
                 className="w-full h-56 object-cover rounded-lg mb-4"
               />
               <h2 className="text-xl font-bold mb-2">{property.title}</h2>
               <p className="text-gray-500 text-sm flex items-center gap-1 mb-3">
-                <MapPin size={14} /> {property.location?.city}, {property.location?.country}
+                <MapPin size={14} /> {property.location?.city},{" "}
+                {property.location?.country}
               </p>
               <p className="text-gray-600 text-sm">{property.description}</p>
             </div>
@@ -380,7 +513,10 @@ export default function GuestBookingDetailPage() {
                 {property.amenities?.map((a) => {
                   const Icon = amenityIcons[a] || Home;
                   return (
-                    <div key={a} className="flex items-center gap-1 px-3 py-1 bg-gray-100 rounded-full text-sm">
+                    <div
+                      key={a}
+                      className="flex items-center gap-1 px-3 py-1 bg-gray-100 rounded-full text-sm"
+                    >
                       <Icon size={14} /> {a}
                     </div>
                   );
@@ -394,9 +530,12 @@ export default function GuestBookingDetailPage() {
                 <div className="flex gap-3">
                   <Calendar size={18} className="text-blue-500" />
                   <div>
-                    {formatDate(booking.checkIn)} - {formatDate(booking.checkOut)}
+                    {formatDate(booking.checkIn)} -{" "}
+                    {formatDate(booking.checkOut)}
                     <br />
-                    <span className="text-xs text-gray-400">{nights} nights</span>
+                    <span className="text-xs text-gray-400">
+                      {nights} nights
+                    </span>
                   </div>
                 </div>
                 <div className="flex gap-3">
@@ -430,11 +569,16 @@ export default function GuestBookingDetailPage() {
                       }`}
                     />
                   ))}
-                  <span className="text-sm text-gray-600 ml-2">{existingReview.rating}/5</span>
+                  <span className="text-sm text-gray-600 ml-2">
+                    {existingReview.rating}/5
+                  </span>
                 </div>
-                <p className="text-gray-600 text-sm">{existingReview.comment}</p>
+                <p className="text-gray-600 text-sm">
+                  {existingReview.comment}
+                </p>
                 <p className="text-xs text-gray-400 mt-2">
-                  Posted on {new Date(existingReview.createdAt).toLocaleDateString()}
+                  Posted on{" "}
+                  {new Date(existingReview.createdAt).toLocaleDateString()}
                 </p>
               </div>
             )}
@@ -446,7 +590,9 @@ export default function GuestBookingDetailPage() {
               <h3 className="font-semibold mb-3">Price Summary</h3>
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between">
-                  <span>₹{property.pricePerNight.toLocaleString()} × {nights} nights</span>
+                  <span>
+                    ₹{property.pricePerNight.toLocaleString()} × {nights} nights
+                  </span>
                   <span>₹{subtotal.toLocaleString()}</span>
                 </div>
                 <div className="flex justify-between">
@@ -468,8 +614,8 @@ export default function GuestBookingDetailPage() {
                     booking.paymentStatus === "paid"
                       ? "text-green-600"
                       : booking.paymentStatus === "refunded"
-                      ? "text-blue-600"
-                      : "text-yellow-600"
+                        ? "text-blue-600"
+                        : "text-yellow-600"
                   }`}
                 >
                   {booking.paymentStatus}
@@ -480,7 +626,9 @@ export default function GuestBookingDetailPage() {
               <div className="mt-4 space-y-3">
                 {showPayButton && !isExpired && (
                   <button
-                    onClick={() => navigate(`/bookings/checkout/${booking._id}`)}
+                    onClick={() =>
+                      navigate(`/bookings/checkout/${booking._id}`)
+                    }
                     className="w-full py-2.5 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700 transition flex items-center justify-center gap-2"
                   >
                     <CreditCard size={16} />
@@ -498,12 +646,13 @@ export default function GuestBookingDetailPage() {
                   </button>
                 )}
 
-                {canReport && (
+                {canRaiseDispute && (
                   <button
-                    onClick={() => setShowReportModal(true)}
-                    className="w-full py-2.5 text-red-600 rounded-lg font-medium hover:bg-red-50 transition"
+                    onClick={() => setShowDisputeModal(true)}
+                    className="w-full py-2.5 border border-orange-500 text-orange-600 rounded-lg font-medium hover:bg-orange-50 transition flex items-center justify-center gap-2"
                   >
-                    <Flag size={14} className="inline mr-1" /> Report Issue
+                    <AlertOctagon size={16} />
+                    Raise Dispute
                   </button>
                 )}
 
@@ -511,7 +660,8 @@ export default function GuestBookingDetailPage() {
                   onClick={() => window.print()}
                   className="w-full py-2.5 text-gray-600 rounded-lg font-medium hover:bg-gray-50 transition"
                 >
-                  <Download size={14} className="inline mr-1" /> Download Invoice
+                  <Download size={14} className="inline mr-1" /> Download
+                  Invoice
                 </button>
               </div>
 
@@ -532,26 +682,42 @@ export default function GuestBookingDetailPage() {
                 </div>
                 <div className="flex-1">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <h4 className="font-semibold text-gray-900">{host?.name || "Host"}</h4>
+                    <h4 className="font-semibold text-gray-900">
+                      {host?.name || "Host"}
+                    </h4>
                     <div className="flex items-center gap-1">
-                      <Star size={12} className="fill-yellow-400 text-yellow-400" />
+                      <Star
+                        size={12}
+                        className="fill-yellow-400 text-yellow-400"
+                      />
                       <span className="text-xs text-gray-600">4.9</span>
                     </div>
                   </div>
-                  <p className="text-xs text-gray-500 mt-0.5">Joined {host?.createdAt ? new Date(host.createdAt).getFullYear() : "2024"}</p>
-                  
+                  <p className="text-xs text-gray-500 mt-0.5">
+                    Joined{" "}
+                    {host?.createdAt
+                      ? new Date(host.createdAt).getFullYear()
+                      : "2024"}
+                  </p>
+
                   <div className="mt-3 space-y-2">
                     {host?.phone && (
                       <div className="flex items-center gap-2 text-sm">
                         <Phone size={14} className="text-gray-400" />
-                        <a href={`tel:${host.phone}`} className="text-gray-600 hover:text-blue-600">
+                        <a
+                          href={`tel:${host.phone}`}
+                          className="text-gray-600 hover:text-blue-600"
+                        >
                           {host.phone}
                         </a>
                       </div>
                     )}
                     <div className="flex items-center gap-2 text-sm">
                       <Mail size={14} className="text-gray-400" />
-                      <a href={`mailto:${host?.email}`} className="text-gray-600 hover:text-blue-600">
+                      <a
+                        href={`mailto:${host?.email}`}
+                        className="text-gray-600 hover:text-blue-600"
+                      >
                         {host?.email}
                       </a>
                     </div>
@@ -576,7 +742,9 @@ export default function GuestBookingDetailPage() {
 
             {/* Important Info */}
             <div className="bg-blue-50 rounded-xl p-4">
-              <h4 className="text-sm font-semibold mb-2">Important Information</h4>
+              <h4 className="text-sm font-semibold mb-2">
+                Important Information
+              </h4>
               <ul className="text-xs text-gray-600 space-y-1">
                 <li>• Check-in: After 2:00 PM</li>
                 <li>• Check-out: Before 11:00 AM</li>
@@ -588,6 +756,83 @@ export default function GuestBookingDetailPage() {
           </div>
         </div>
       </div>
+
+      {/* Dispute Modal */}
+      {showDisputeModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl max-w-md w-full p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-xl font-semibold flex items-center gap-2">
+                <AlertOctagon size={20} className="text-orange-600" />
+                Raise a Dispute
+              </h3>
+              <button
+                onClick={() => setShowDisputeModal(false)}
+                className="text-gray-400 hover:text-gray-600"
+              >
+                <XCircle size={24} />
+              </button>
+            </div>
+
+            <div className="mb-4">
+              <p className="text-sm text-gray-600 mb-2">
+                Please describe your issue in detail. Admin will review and help
+                resolve.
+              </p>
+              <div className="bg-yellow-50 p-3 rounded-lg mb-3">
+                <p className="text-xs text-yellow-800">
+                  ⚠️ Only raise disputes for genuine issues like:
+                </p>
+                <ul className="text-xs text-yellow-700 mt-1 list-disc list-inside">
+                  <li>Property not as described</li>
+                  <li>Safety or cleanliness issues</li>
+                  <li>Host misconduct</li>
+                  <li>Payment disputes</li>
+                </ul>
+              </div>
+            </div>
+
+            <div className="mb-6">
+              <label className="block text-sm font-medium mb-2">
+                Describe your issue *
+              </label>
+              <textarea
+                value={disputeReason}
+                onChange={(e) => setDisputeReason(e.target.value)}
+                placeholder="Please provide detailed information about your issue..."
+                rows="5"
+                className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
+              />
+              <p className="text-xs text-gray-400 mt-1">
+                Minimum 10 characters. Be specific to help us resolve faster.
+              </p>
+            </div>
+
+            <div className="flex gap-3">
+              <button
+                onClick={() => setShowDisputeModal(false)}
+                className="flex-1 py-2 border rounded-lg hover:bg-gray-50"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleDispute}
+                disabled={submittingDispute}
+                className="flex-1 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 disabled:opacity-50 flex items-center justify-center gap-2"
+              >
+                {submittingDispute ? (
+                  "Submitting..."
+                ) : (
+                  <>
+                    <AlertOctagon size={16} />
+                    Submit Dispute
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Review Modal */}
       {showReviewModal && (
@@ -619,7 +864,9 @@ export default function GuestBookingDetailPage() {
                 {[1, 2, 3, 4, 5].map((star) => (
                   <button
                     key={star}
-                    onClick={() => setReviewData({ ...reviewData, rating: star })}
+                    onClick={() =>
+                      setReviewData({ ...reviewData, rating: star })
+                    }
                     onMouseEnter={() => setHoveredRating(star)}
                     onMouseLeave={() => setHoveredRating(0)}
                     className="focus:outline-none"
@@ -639,10 +886,14 @@ export default function GuestBookingDetailPage() {
 
             {/* Review Input */}
             <div className="mb-6">
-              <label className="block text-sm font-medium mb-2">Your Review *</label>
+              <label className="block text-sm font-medium mb-2">
+                Your Review *
+              </label>
               <textarea
                 value={reviewData.comment}
-                onChange={(e) => setReviewData({ ...reviewData, comment: e.target.value })}
+                onChange={(e) =>
+                  setReviewData({ ...reviewData, comment: e.target.value })
+                }
                 placeholder="Share your experience..."
                 rows="4"
                 className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -661,7 +912,11 @@ export default function GuestBookingDetailPage() {
                 disabled={submittingReview}
                 className="flex-1 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:opacity-50"
               >
-                {submittingReview ? "Submitting..." : existingReview ? "Update" : "Submit"}
+                {submittingReview
+                  ? "Submitting..."
+                  : existingReview
+                    ? "Update"
+                    : "Submit"}
               </button>
             </div>
           </div>
@@ -677,24 +932,33 @@ export default function GuestBookingDetailPage() {
                 <XCircle size={28} className="text-red-600" />
               </div>
               <h3 className="text-lg font-semibold">Cancel Booking?</h3>
-              <p className="text-sm text-gray-500">This action cannot be undone.</p>
+              <p className="text-sm text-gray-500">
+                This action cannot be undone.
+              </p>
             </div>
             <div
               className={`p-3 rounded-lg text-center text-sm mb-4 ${
                 cancelInfo?.color === "green"
                   ? "bg-green-50 text-green-700"
                   : cancelInfo?.color === "yellow"
-                  ? "bg-yellow-50 text-yellow-700"
-                  : "bg-red-50 text-red-700"
+                    ? "bg-yellow-50 text-yellow-700"
+                    : "bg-red-50 text-red-700"
               }`}
             >
               <p className="font-medium">{cancelInfo?.msg}</p>
             </div>
             <div className="flex gap-3">
-              <button onClick={() => setShowCancelModal(false)} className="flex-1 py-2 border rounded-lg">
+              <button
+                onClick={() => setShowCancelModal(false)}
+                className="flex-1 py-2 border rounded-lg"
+              >
                 Keep Booking
               </button>
-              <button onClick={handleCancel} disabled={cancelling} className="flex-1 py-2 bg-red-600 text-white rounded-lg">
+              <button
+                onClick={handleCancel}
+                disabled={cancelling}
+                className="flex-1 py-2 bg-red-600 text-white rounded-lg"
+              >
                 Yes, Cancel
               </button>
             </div>
@@ -713,16 +977,24 @@ export default function GuestBookingDetailPage() {
               className="w-full p-2 rounded-lg mb-4 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               <option value="">Select reason</option>
-              <option value="property_not_as_described">Not as described</option>
+              <option value="property_not_as_described">
+                Not as described
+              </option>
               <option value="cleanliness_issues">Cleanliness issues</option>
               <option value="host_unresponsive">Host unresponsive</option>
               <option value="other">Other</option>
             </select>
             <div className="flex gap-3">
-              <button onClick={() => setShowReportModal(false)} className="flex-1 py-2 rounded-lg bg-gray-100">
+              <button
+                onClick={() => setShowReportModal(false)}
+                className="flex-1 py-2 rounded-lg bg-gray-100"
+              >
                 Cancel
               </button>
-              <button onClick={handleReport} className="flex-1 py-2 bg-red-600 text-white rounded-lg">
+              <button
+                onClick={handleReport}
+                className="flex-1 py-2 bg-red-600 text-white rounded-lg"
+              >
                 Submit
               </button>
             </div>

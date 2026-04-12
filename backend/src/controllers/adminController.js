@@ -2,6 +2,7 @@
 const User = require("../models/userModel");
 const Property = require("../models/propertyModel");
 const Booking = require("../models/bookingModel");
+const Dispute = require("../models/disputeModel");
 
 const getAllUsers = async (req, res) => {
   try {
@@ -25,10 +26,7 @@ const getAllUsers = async (req, res) => {
 
 const getAllPropertiesForAdmin = async (req, res) => {
   try {
-    const properties = await Property.find().populate(
-      "host",
-      "name email",
-    );
+    const properties = await Property.find().populate("host", "name email");
     res.status(200).json({
       message: "Properties fetched",
       data: properties,
@@ -41,52 +39,56 @@ const getAllPropertiesForAdmin = async (req, res) => {
 
 const approveProperty = async (req, res) => {
   try {
-    const property = await Property.findOne({ _id: req.params.id, isDeleted: false });
+    const property = await Property.findOne({
+      _id: req.params.id,
+      isDeleted: false,
+    });
 
-    if(!property){
-      return res.status(400).json({message: "Property not found"});
+    if (!property) {
+      return res.status(400).json({ message: "Property not found" });
     }
 
     property.approvalStatus = "approved";
     await property.save();
     res.status(200).json({
-      message: "Property approved"
-    })
+      message: "Property approved",
+    });
   } catch (error) {
     console.log(error);
     res.status(500).json({
-      message: error.message || "Internal server error"
-    })
+      message: error.message || "Internal server error",
+    });
   }
-}
+};
 
 const rejectProperty = async (req, res) => {
   try {
-    const property = await Property.findOne({ _id: req.params.id, isDeleted: false });
+    const property = await Property.findOne({
+      _id: req.params.id,
+      isDeleted: false,
+    });
 
-    if(!property){
-      return res.status(400).json({message: "Property not found"});
+    if (!property) {
+      return res.status(400).json({ message: "Property not found" });
     }
 
     property.approvalStatus = "rejected";
     property.status = "inactive";
     await property.save();
     res.status(200).json({
-      message: "Property rejected"
-    })
+      message: "Property rejected",
+    });
   } catch (error) {
     console.log(error);
     res.status(500).json({
-      message: error.message || "Internal server error"
-    })
+      message: error.message || "Internal server error",
+    });
   }
-}
+};
 
 const getAllBookings = async (req, res) => {
   try {
-    const booking = await Booking.find()
-      .populate("property")
-      .populate("guest");
+    const booking = await Booking.find().populate("property").populate("guest");
 
     if (!booking) {
       return res.status(404).json({ message: "Bookings not found" });
@@ -110,7 +112,7 @@ const updateBooking = async (req, res) => {
     if (!booking) {
       return res.status(404).json({ message: "Booking not found" });
     }
-    
+
     const updatedBooking = await Booking.findByIdAndUpdate(
       req.params.id,
       req.body,
@@ -132,12 +134,12 @@ const updateBooking = async (req, res) => {
 const toggleStatus = async (req, res) => {
   try {
     const booking = await Booking.findById(req.params.id);
-    
-    if(!booking){
+
+    if (!booking) {
       return res.status(404).json({ message: "Booking not found" });
     }
     const { status } = req.body;
-    const oldStatus = booking.status
+    const oldStatus = booking.status;
     booking.status = status || oldStatus;
     await booking.save();
 
@@ -394,6 +396,111 @@ const getRecentProperties = async (req, res) => {
   }
 };
 
+// Get all disputes (Admin only)
+const getAllDisputes = async (req, res) => {
+  try {
+    const { status } = req.query;
+
+    // Build query
+    let query = {};
+    if (
+      status &&
+      ["open", "resolved", "rejected"].includes(status)
+    ) {
+      query.status = status;
+    }
+
+    const disputes = await Dispute.find(query)
+      .populate({
+        path: "booking",
+        populate: [
+          {
+            path: "property",
+            select: "title", // property name
+          },
+          {
+            path: "host",
+            select: "name email",
+          },
+        ],
+      })
+      .populate("raisedBy", "name email")
+      .sort({ createdAt: -1 });
+
+    res.json({
+      success: true,
+      count: disputes.length,
+      disputes,
+    });
+  } catch (error) {
+    console.error("Get all disputes error:", error);
+    res.status(500).json({ message: "Failed to fetch disputes" });
+  }
+};
+
+// Update dispute status (Admin only) 
+const mongoose = require("mongoose");
+
+const updateDisputeStatus = async (req, res) => {
+  try {
+    const disputeId = req.params.id;
+    let { status, resolution } = req.body;
+
+    // ✅ Validate ID
+    if (!mongoose.Types.ObjectId.isValid(disputeId)) {
+      return res.status(400).json({
+        message: "Invalid dispute ID",
+      });
+    }
+
+    // ✅ Normalize status
+    status = status?.toLowerCase();
+
+    if (!["resolved", "rejected"].includes(status)) {
+      return res.status(400).json({
+        message: "Invalid status",
+      });
+    }
+
+    // ✅ Validate resolution
+    if (!resolution || resolution.trim() === "") {
+      return res.status(400).json({
+        message: "Resolution message is required",
+      });
+    }
+
+    const dispute = await Dispute.findById(disputeId);
+
+    if (!dispute) {
+      return res.status(404).json({
+        message: "Dispute not found",
+      });
+    }
+
+    // ✅ Prevent re-processing
+    if (dispute.status !== "open") {
+      return res.status(400).json({
+        message: "Dispute already handled",
+      });
+    }
+
+    // ✅ Apply update
+    dispute.status = status;
+    dispute.resolution = resolution.trim();
+    dispute.resolvedAt = new Date();
+
+    await dispute.save();
+
+    res.json({
+      success: true,
+      dispute,
+    });
+
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
 module.exports = {
   getAdminStats,
   getRecentBookings,
@@ -406,5 +513,7 @@ module.exports = {
   rejectProperty,
   getAllBookings,
   updateBooking,
-  toggleStatus
+  toggleStatus,
+  updateDisputeStatus,
+  getAllDisputes,
 };

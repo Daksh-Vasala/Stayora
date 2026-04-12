@@ -15,6 +15,9 @@ const {
   updateBooking,
   toggleStatus,
   getAllBookings,
+  resolveDispute,
+  getAllDisputes,
+  updateDisputeStatus,
 } = require("../controllers/adminController");
 const allowRoles = require("../middlewares/allowedRoles");
 
@@ -35,5 +38,7 @@ router.get("/recent-bookings", getRecentBookings);
 router.get("/pending-properties", getPendingProperties);
 router.get("/recent-users", getRecentUsers);
 router.get("/recent-properties", getRecentProperties);
+router.get("/get-disputes", getAllDisputes);
+router.put("/update-dispute/:id", updateDisputeStatus);
 
 module.exports = router;
