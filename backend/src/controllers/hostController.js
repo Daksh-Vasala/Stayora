@@ -1,6 +1,7 @@
 // controllers/hostController.js
 const Booking = require("../models/bookingModel");
 const Property = require("../models/propertyModel");
+const Review = require("../models/reviewModel");
 
 exports.getHostEarnings = async (req, res) => {
   try {
@@ -36,7 +37,6 @@ exports.getHostEarnings = async (req, res) => {
       (sum, b) => sum + b.totalPrice,
       0,
     );
-    console.log(pendingPayout)
     const pendingCount = pendingBookings.length;
 
     // This month earnings
@@ -158,6 +158,153 @@ exports.getPropertyEarnings = async (req, res) => {
 
     res.json(earningsData.sort((a, b) => b.totalEarned - a.totalEarned));
   } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+// controllers/hostController.js
+exports.getDashboardStats = async (req, res) => {
+  try {
+    const hostId = req.user.id;
+    const now = new Date();
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    const startOfLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+    const endOfLastMonth = new Date(now.getFullYear(), now.getMonth(), 0);
+
+    // Get all properties
+    const properties = await Property.find({ host: hostId });
+    const activeListings = properties.filter(p => p.status === "active").length;
+    
+    // Get completed bookings (earnings)
+    const completedBookings = await Booking.find({
+      host: hostId,
+      status: "completed",
+      paymentStatus: "paid"
+    });
+    
+    const totalEarnings = completedBookings.reduce((sum, b) => sum + b.totalPrice, 0);
+    
+    // This month vs last month earnings
+    const thisMonthEarnings = completedBookings
+      .filter(b => b.createdAt >= startOfMonth)
+      .reduce((sum, b) => sum + b.totalPrice, 0);
+    
+    const lastMonthEarnings = completedBookings
+      .filter(b => b.createdAt >= startOfLastMonth && b.createdAt <= endOfLastMonth)
+      .reduce((sum, b) => sum + b.totalPrice, 0);
+    
+    const earningsChange = lastMonthEarnings === 0 ? 0 : 
+      ((thisMonthEarnings - lastMonthEarnings) / lastMonthEarnings) * 100;
+    
+    // Total bookings count
+    const totalBookings = await Booking.countDocuments({ host: hostId });
+    
+    // Bookings this month vs last month
+    const thisMonthBookings = await Booking.countDocuments({
+      host: hostId,
+      createdAt: { $gte: startOfMonth }
+    });
+    
+    const lastMonthBookings = await Booking.countDocuments({
+      host: hostId,
+      createdAt: { $gte: startOfLastMonth, $lte: endOfLastMonth }
+    });
+    
+    const bookingsChange = lastMonthBookings === 0 ? 0 :
+      ((thisMonthBookings - lastMonthBookings) / lastMonthBookings) * 100;
+    
+    // Average rating from reviews
+    const reviews = await Review.find({ host: hostId });
+    const averageRating = reviews.length > 0 
+      ? reviews.reduce((sum, r) => sum + (r.rating || 0), 0) / reviews.length 
+      : 0;
+    
+    res.json({
+      totalEarnings,
+      earningsChange: Math.round(earningsChange * 10) / 10,
+      activeListings,
+      listingsChange: 0, // Calculate if you have historical data
+      totalBookings,
+      bookingsChange: Math.round(bookingsChange * 10) / 10,
+      averageRating,
+      ratingChange: 0
+    });
+    
+  } catch (error) {
+    console.log(error)
+    res.status(500).json({ error: error.message });
+  }
+};
+
+// Add to hostController.js
+exports.getHostBookings = async (req, res) => {
+  try {
+    const hostId = req.user.id;
+    const { limit = 10, status } = req.query;
+    
+    const query = { host: hostId };
+    if (status) query.status = status;
+    
+    const bookings = await Booking.find(query)
+      .populate("guest", "name email")
+      .populate("property", "title location images")
+      .sort({ createdAt: -1 })
+      .limit(parseInt(limit));
+    
+    res.json({
+      bookings,
+      total: await Booking.countDocuments(query)
+    });
+    
+  } catch (error) {
+    console.log(error)
+    res.status(500).json({ error: error.message });
+  }
+};
+
+// Add to hostController.js
+exports.getTopProperties = async (req, res) => {
+  try {
+    const hostId = req.user.id;
+    const { limit = 3 } = req.query;
+    
+    const properties = await Property.find({ host: hostId });
+    
+    // Get booking counts and ratings for each property
+    const propertiesWithStats = await Promise.all(
+      properties.map(async (property) => {
+        const bookings = await Booking.find({
+          property: property._id,
+          status: "completed"
+        });
+        
+        const totalBookings = bookings.length;
+        const totalRevenue = bookings.reduce((sum, b) => sum + b.totalPrice, 0);
+        
+        // Get average rating from reviews
+        const reviews = await Review.find({ property: property._id });
+        const averageRating = reviews.length > 0
+          ? reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length
+          : 0;
+        
+        return {
+          ...property.toObject(),
+          totalBookings,
+          totalRevenue,
+          averageRating
+        };
+      })
+    );
+    
+    // Sort by totalRevenue or totalBookings
+    const topProperties = propertiesWithStats
+      .sort((a, b) => b.totalRevenue - a.totalRevenue)
+      .slice(0, parseInt(limit));
+    
+    res.json(topProperties);
+    
+  } catch (error) {
+    console.log(error)
     res.status(500).json({ error: error.message });
   }
 };
