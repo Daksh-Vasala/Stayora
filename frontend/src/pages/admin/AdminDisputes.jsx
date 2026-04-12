@@ -104,7 +104,7 @@ export default function AdminDisputes() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-96">
-        <Loader className="w-8 h-8 animate-spin text-blue-600" />
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600" />
       </div>
     );
   }
@@ -285,15 +285,23 @@ export default function AdminDisputes() {
 
                     {/* Show resolution if dispute is resolved */}
                     {dispute.status !== "open" && dispute.resolution && (
-                      <div className={`${dispute.status === "resolved" ? "bg-green-50" : "bg-zinc-50"} rounded-xl p-3.5 mb-4`}>
-                        <p className={`text-[10px] ${dispute.status === "resolved" ?  "text-green-600" : "text-zinc-600"} font-bold uppercase tracking-wide mb-1`}>
+                      <div
+                        className={`${dispute.status === "resolved" ? "bg-green-50" : "bg-zinc-50"} rounded-xl p-3.5 mb-4`}
+                      >
+                        <p
+                          className={`text-[10px] ${dispute.status === "resolved" ? "text-green-600" : "text-zinc-600"} font-bold uppercase tracking-wide mb-1`}
+                        >
                           Resolution
                         </p>
-                        <p className={`text-sm ${dispute.status === "resolved" ?  "text-green-700" : "text-zinc-700"} leading-relaxed`}>
+                        <p
+                          className={`text-sm ${dispute.status === "resolved" ? "text-green-700" : "text-zinc-700"} leading-relaxed`}
+                        >
                           {dispute.resolution}
                         </p>
                         {dispute.resolvedAt && (
-                          <p className={`text-xs ${dispute.status === "resolved" ?  "text-green-600" : "text-zinc-600"} mt-2`}>
+                          <p
+                            className={`text-xs ${dispute.status === "resolved" ? "text-green-600" : "text-zinc-600"} mt-2`}
+                          >
                             Resolved on: {formatDate(dispute.resolvedAt)}
                           </p>
                         )}
@@ -318,7 +326,11 @@ export default function AdminDisputes() {
                         </button>
                         <button
                           onClick={() =>
-                            updateDisputeStatus(dispute._id, "rejected", resolutionText)
+                            updateDisputeStatus(
+                              dispute._id,
+                              "rejected",
+                              resolutionText,
+                            )
                           }
                           disabled={isUpdating}
                           className="flex items-center gap-1.5 border border-gray-200 text-gray-600 hover:bg-gray-50 text-xs font-semibold px-4 py-2 rounded-xl bg-white transition-colors disabled:opacity-50"

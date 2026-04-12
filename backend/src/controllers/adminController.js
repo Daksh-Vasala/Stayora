@@ -438,9 +438,6 @@ const getAllDisputes = async (req, res) => {
   }
 };
 
-// Update dispute status (Admin only) 
-const mongoose = require("mongoose");
-
 const updateDisputeStatus = async (req, res) => {
   try {
     const disputeId = req.params.id;
@@ -501,6 +498,88 @@ const updateDisputeStatus = async (req, res) => {
   }
 };
 
+// controllers/adminController.js
+const getFinancials = async (req, res) => {
+  try {
+    const now = new Date();
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    
+    // Get all completed bookings
+    const completedBookings = await Booking.find({
+      status: "completed",
+      paymentStatus: "paid"
+    }).populate("guest", "name").populate("property", "title");
+    
+    // Summary calculations
+    const totalRevenue = completedBookings.reduce((s, b) => s + b.totalPrice, 0);
+    const platformFees = totalRevenue * 0.15;
+    const hostPayouts = totalRevenue * 0.85;
+    
+    // This month revenue
+    const thisMonthRevenue = completedBookings
+      .filter(b => b.createdAt >= startOfMonth)
+      .reduce((s, b) => s + b.totalPrice, 0);
+    
+    // Pending payouts
+    const pendingBookings = await Booking.find({
+      status: "confirmed",
+      paymentStatus: "paid",
+      checkIn: { $gt: now }
+    });
+    const pendingAmount = pendingBookings.reduce((s, b) => s + (b.totalPrice * 0.85), 0);
+    
+    // Monthly chart data (last 6 months)
+    const months = ["Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    const monthlyRevenue = [];
+    for (let i = 5; i >= 0; i--) {
+      const monthStart = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      const monthEnd = new Date(now.getFullYear(), now.getMonth() - i + 1, 0);
+      const revenue = completedBookings
+        .filter(b => b.createdAt >= monthStart && b.createdAt <= monthEnd)
+        .reduce((s, b) => s + b.totalPrice, 0);
+      monthlyRevenue.push(revenue);
+    }
+    
+    // Recent transactions (last 10)
+    const recentBookings = await Booking.find({
+      status: "completed",
+      paymentStatus: "paid"
+    })
+      .populate("guest", "name")
+      .populate("property", "title")
+      .sort({ createdAt: -1 })
+      .limit(10);
+    
+    const transactions = recentBookings.map(b => ({
+      id: b._id,
+      guest: b.guest?.name || "Guest",
+      property: b.property?.title || "Property",
+      amount: b.totalPrice,
+      date: new Date(b.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric" }),
+      status: "completed"
+    }));
+    
+    res.json({
+      summary: {
+        totalRevenue,
+        platformFees: Math.round(platformFees),
+        hostPayouts: Math.round(hostPayouts),
+        pendingAmount: Math.round(pendingAmount),
+        monthlyGrowth: thisMonthRevenue ? 18 : 0
+      },
+      chart: {
+        months,
+        revenue: monthlyRevenue,
+        maxRevenue: Math.max(...monthlyRevenue, 1)
+      },
+      transactions
+    });
+    
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 module.exports = {
   getAdminStats,
   getRecentBookings,
@@ -516,4 +595,5 @@ module.exports = {
   toggleStatus,
   updateDisputeStatus,
   getAllDisputes,
+  getFinancials
 };

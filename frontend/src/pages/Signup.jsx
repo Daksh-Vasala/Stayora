@@ -1,4 +1,4 @@
-import { Mail, Lock, User, Phone, Eye, EyeOff } from "lucide-react";
+import { Mail, Lock, User, Phone, Eye, EyeOff, Loader2 } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 
@@ -11,7 +11,7 @@ import { toast } from "react-toastify";
 import { useAuth } from "../context/AuthContext";
 
 export default function Signup() {
-  const { getUser } = useAuth()
+  const { getUser } = useAuth();
   const [role, setRole] = useState("guest");
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -35,7 +35,7 @@ export default function Signup() {
         userData.role = "host";
       }
       const res = await axios.post("/user/register", userData);
-      getUser()
+      getUser();
       console.log(res.data);
       toast.success(res.data.message);
       navigate("/");
@@ -184,10 +184,16 @@ export default function Signup() {
 
             <button
               type="submit"
-              className={`w-full mt-4 bg-blue-600 text-white py-3 rounded-xl hover:bg-blue-700 transition-colors shadow-sm ${loading && "opacity-70"}`}
+              className={`w-full mt-4 bg-blue-600 text-white py-3 rounded-xl hover:bg-blue-700 transition-colors shadow-sm flex items-center justify-center gap-2 ${loading && "opacity-70"}`}
               disabled={loading}
             >
-              {loading ? "Please wait..." : "Sign up"}
+              {loading ? (
+                <>
+                  <Loader2 size={15} className="animate-spin" /> Please wait...
+                </>
+              ) : (
+                "Sign up"
+              )}
             </button>
           </form>
 

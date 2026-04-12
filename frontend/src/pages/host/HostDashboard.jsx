@@ -15,7 +15,7 @@ import {
   Users,
 } from "lucide-react";
 import { Link } from "react-router-dom";
-import axios from "axios"
+import axios from "axios";
 
 const STATUS_CONFIG = {
   confirmed: {
@@ -73,12 +73,12 @@ const StatCard = memo(({ label, value, change, up, Icon }) => {
 const BookingRow = memo(({ booking }) => {
   const S = STATUS_CONFIG[booking.status] || STATUS_CONFIG.pending;
   const Icon = S.icon;
-  
+
   // Format dates nicely
   const formatDates = (checkIn, checkOut) => {
     const start = new Date(checkIn);
     const end = new Date(checkOut);
-    return `${start.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} – ${end.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`;
+    return `${start.toLocaleDateString("en-US", { month: "short", day: "numeric" })} – ${end.toLocaleDateString("en-US", { month: "short", day: "numeric" })}`;
   };
 
   return (
@@ -96,7 +96,8 @@ const BookingRow = memo(({ booking }) => {
         </p>
 
         <p className="text-xs text-gray-400 truncate">
-          {booking.property?.title || "Property"} · {formatDates(booking.checkIn, booking.checkOut)}
+          {booking.property?.title || "Property"} ·{" "}
+          {formatDates(booking.checkIn, booking.checkOut)}
         </p>
       </div>
 
@@ -105,7 +106,9 @@ const BookingRow = memo(({ booking }) => {
           ₹{booking.totalPrice?.toLocaleString()}
         </p>
 
-        <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${S.cls} flex items-center gap-0.5 justify-end`}>
+        <span
+          className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${S.cls} flex items-center gap-0.5 justify-end`}
+        >
           <Icon size={10} />
           {S.label}
         </span>
@@ -164,16 +167,16 @@ export default function HostDashboard() {
   const fetchDashboardData = async () => {
     try {
       setLoading(true);
-      
+
       // Fetch all data in parallel
       const [statsRes, bookingsRes, listingsRes] = await Promise.all([
         axios.get("host/dashboard/stats"),
         axios.get("host/bookings?limit=3"),
         axios.get("host/properties/top?limit=3"),
       ]);
-      console.log(statsRes.data)
-      console.log(listingsRes.data)
-      console.log(bookingsRes.data)
+      console.log(statsRes.data);
+      console.log(listingsRes.data);
+      console.log(bookingsRes.data);
       setStats(statsRes.data);
       setRecentBookings(bookingsRes.data);
       setTopListings(listingsRes.data);
@@ -196,10 +199,7 @@ export default function HostDashboard() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-96">
-        <div className="text-center">
-          <div className="w-12 h-12 border-4 border-gray-200 border-t-blue-500 rounded-full animate-spin mx-auto"></div>
-          <p className="text-gray-400 mt-4">Loading dashboard...</p>
-        </div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600" />
       </div>
     );
   }
@@ -224,9 +224,7 @@ export default function HostDashboard() {
     <div className="space-y-6 p-6">
       {/* Welcome */}
       <div>
-        <h1 className="text-xl font-bold text-gray-900">
-          {getGreeting()} 👋
-        </h1>
+        <h1 className="text-xl font-bold text-gray-900">{getGreeting()} 👋</h1>
         <p className="text-sm text-gray-400 mt-0.5">
           Here's what's happening with your properties.
         </p>

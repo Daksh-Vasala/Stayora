@@ -170,7 +170,7 @@ export default function UpdateListingPage() {
   if (loading)
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <Loader2 size={22} className="animate-spin text-blue-600" />
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600" />
       </div>
     );
 
@@ -415,7 +415,7 @@ export default function UpdateListingPage() {
                       ? "border-blue-600 bg-blue-50 text-blue-700"
                       : "border-gray-100 text-gray-500 hover:border-gray-300 bg-white"
                   }`}
-                >
+              >
                 {s}
               </button>
             ))}

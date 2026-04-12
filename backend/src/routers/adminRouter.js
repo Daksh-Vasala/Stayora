@@ -18,6 +18,7 @@ const {
   resolveDispute,
   getAllDisputes,
   updateDisputeStatus,
+  getFinancials,
 } = require("../controllers/adminController");
 const allowRoles = require("../middlewares/allowedRoles");
 
@@ -39,6 +40,7 @@ router.get("/pending-properties", getPendingProperties);
 router.get("/recent-users", getRecentUsers);
 router.get("/recent-properties", getRecentProperties);
 router.get("/get-disputes", getAllDisputes);
+router.get("/financials", getFinancials);
 router.put("/update-dispute/:id", updateDisputeStatus);
 
 module.exports = router;

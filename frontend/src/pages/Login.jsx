@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Mail, Lock, Eye, EyeOff } from "lucide-react";
+import { Mail, Lock, Eye, EyeOff, Loader2 } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import axios from "axios";
@@ -103,10 +103,16 @@ export default function Login() {
 
             <button
               type="submit"
-              className={`w-full mt-2 bg-blue-600 text-white py-3 rounded-xl hover:bg-blue-700 transition-colors shadow-sm ${loading && "opacity-50"}`}
+              className={`w-full mt-2 bg-blue-600 text-white py-3 rounded-xl hover:bg-blue-700 transition-colors shadow-sm flex items-center justify-center gap-2 ${loading && "opacity-50"}`}
               disabled={loading}
             >
-              {loading ? "Please wait..." : "Sign in"}
+              {loading ? (
+                <>
+                  <Loader2 size={15} className="animate-spin" /> Please wait...
+                </>
+              ) : (
+                "Sign in"
+              )}
             </button>
           </form>
 

@@ -17,8 +17,9 @@ import {
   AlertCircle,
   CheckCircle,
   Send,
+  Loader2,
 } from "lucide-react";
-import { useAuth } from "../context/AuthContext"
+import { useAuth } from "../context/AuthContext";
 import { toast } from "react-toastify";
 
 export default function ProfilePage() {
@@ -30,7 +31,7 @@ export default function ProfilePage() {
   const [updating, setUpdating] = useState(false);
   const [resending, setResending] = useState(false);
   const [resendMessage, setResendMessage] = useState(null);
-  const { handleLogout } = useAuth()
+  const { handleLogout } = useAuth();
 
   useEffect(() => {
     fetchUserProfile();
@@ -58,7 +59,7 @@ export default function ProfilePage() {
       });
       setUser(response.data.data);
       setEditing(false);
-      toast.success(response?.data?.message)
+      toast.success(response?.data?.message);
     } catch (error) {
       console.error(error);
       toast.error(error?.response?.data?.message || "Something wen wrong");
@@ -73,24 +74,28 @@ export default function ProfilePage() {
       setResending(true);
       setResendMessage(null);
       console.log(user);
-      
+
       const response = await axios.post("/user/resend-verification", {
         email: user.email,
       });
-      
+
       setResendMessage({
         type: "success",
-        text: response.data.message || "Verification email sent! Please check your inbox."
+        text:
+          response.data.message ||
+          "Verification email sent! Please check your inbox.",
       });
-      
+
       // Clear message after 5 seconds
       setTimeout(() => setResendMessage(null), 5000);
     } catch (error) {
       setResendMessage({
         type: "error",
-        text: error.response?.data?.message || "Failed to send verification email. Please try again."
+        text:
+          error.response?.data?.message ||
+          "Failed to send verification email. Please try again.",
       });
-      
+
       setTimeout(() => setResendMessage(null), 5000);
     } finally {
       setResending(false);
@@ -116,7 +121,9 @@ export default function ProfilePage() {
         {/* Header */}
         <div className="mb-6">
           <h1 className="text-2xl font-bold text-gray-900">Personal Profile</h1>
-          <p className="text-sm text-gray-500 mt-1">Manage your personal information</p>
+          <p className="text-sm text-gray-500 mt-1">
+            Manage your personal information
+          </p>
         </div>
 
         {/* Email Verification Warning with Resend Button */}
@@ -126,9 +133,12 @@ export default function ProfilePage() {
               <div className="flex items-start gap-3">
                 <AlertCircle size={18} className="text-yellow-600 mt-0.5" />
                 <div className="flex-1">
-                  <p className="text-sm font-medium text-yellow-800">Email not verified</p>
+                  <p className="text-sm font-medium text-yellow-800">
+                    Email not verified
+                  </p>
                   <p className="text-xs text-yellow-700 mt-0.5">
-                    Verify your email to access all features like booking properties and messaging hosts.
+                    Verify your email to access all features like booking
+                    properties and messaging hosts.
                   </p>
                 </div>
               </div>
@@ -139,7 +149,7 @@ export default function ProfilePage() {
               >
                 {resending ? (
                   <>
-                    <div className="animate-spin rounded-full h-3 w-3 border-2 border-yellow-800 border-t-transparent" />
+                    <Loader2 size={12} className="animate-spin" />
                     <span>Sending...</span>
                   </>
                 ) : (
@@ -150,14 +160,16 @@ export default function ProfilePage() {
                 )}
               </button>
             </div>
-            
+
             {/* Resend Message */}
             {resendMessage && (
-              <div className={`mt-3 p-2 rounded-lg text-xs ${
-                resendMessage.type === "success" 
-                  ? "bg-green-100 text-green-800" 
-                  : "bg-red-100 text-red-800"
-              }`}>
+              <div
+                className={`mt-3 p-2 rounded-lg text-xs ${
+                  resendMessage.type === "success"
+                    ? "bg-green-100 text-green-800"
+                    : "bg-red-100 text-red-800"
+                }`}
+              >
                 {resendMessage.text}
               </div>
             )}
@@ -169,7 +181,9 @@ export default function ProfilePage() {
           <div className="mb-6 bg-green-50 border border-green-200 rounded-xl p-4">
             <div className="flex items-center gap-3">
               <CheckCircle size={18} className="text-green-600" />
-              <p className="text-sm text-green-800">Your email is verified. You have full access to all features.</p>
+              <p className="text-sm text-green-800">
+                Your email is verified. You have full access to all features.
+              </p>
             </div>
           </div>
         )}
@@ -177,7 +191,7 @@ export default function ProfilePage() {
         <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
           {/* Cover */}
           <div className="h-24 bg-linear-to-r from-blue-500 to-blue-600"></div>
-          
+
           {/* Avatar Section */}
           <div className="relative px-6 pb-6">
             <div className="absolute -top-12 left-6">
@@ -193,15 +207,19 @@ export default function ProfilePage() {
             <div className="mt-14">
               {/* Role Badge */}
               <div className="mb-4">
-                <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium capitalize ${
-                  user?.role === "admin" ? "bg-purple-100 text-purple-700" :
-                  user?.role === "host" ? "bg-orange-100 text-orange-700" :
-                  "bg-green-100 text-green-700"
-                }`}>
+                <span
+                  className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium capitalize ${
+                    user?.role === "admin"
+                      ? "bg-purple-100 text-purple-700"
+                      : user?.role === "host"
+                        ? "bg-orange-100 text-orange-700"
+                        : "bg-green-100 text-green-700"
+                  }`}
+                >
                   <Shield size={12} />
                   {user?.role}
                 </span>
-                
+
                 {/* Verification Badge */}
                 {user?.is_verified && (
                   <span className="inline-flex ml-8 items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-green-100 text-green-700">
@@ -233,9 +251,14 @@ export default function ProfilePage() {
               {/* Personal Info Section */}
               <div className="border-t border-gray-100 pt-4">
                 <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-lg font-semibold text-gray-900">Personal Information</h2>
+                  <h2 className="text-lg font-semibold text-gray-900">
+                    Personal Information
+                  </h2>
                   {!editing && (
-                    <button onClick={() => setEditing(true)} className="text-blue-600 hover:text-blue-700">
+                    <button
+                      onClick={() => setEditing(true)}
+                      className="text-blue-600 hover:text-blue-700"
+                    >
                       <Edit2 size={16} />
                     </button>
                   )}
@@ -244,44 +267,56 @@ export default function ProfilePage() {
                 {editing ? (
                   <div className="space-y-4">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Full Name
+                      </label>
                       <input
                         type="text"
                         value={formData.name || ""}
-                        onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                        onChange={(e) =>
+                          setFormData({ ...formData, name: e.target.value })
+                        }
                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Phone Number
+                      </label>
                       <input
                         type="tel"
                         value={formData.phone || ""}
-                        onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                        onChange={(e) =>
+                          setFormData({ ...formData, phone: e.target.value })
+                        }
                         placeholder="Add phone number"
                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Location</label>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Location
+                      </label>
                       <input
                         type="text"
                         value={formData.location || ""}
-                        onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+                        onChange={(e) =>
+                          setFormData({ ...formData, location: e.target.value })
+                        }
                         placeholder="City, Country"
                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
                       />
                     </div>
                     <div className="flex gap-3">
-                      <button 
-                        onClick={handleUpdateProfile} 
+                      <button
+                        onClick={handleUpdateProfile}
                         disabled={updating}
                         className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700 transition disabled:opacity-50"
                       >
                         {updating ? "Saving..." : "Save Changes"}
                       </button>
-                      <button 
-                        onClick={() => setEditing(false)} 
+                      <button
+                        onClick={() => setEditing(false)}
                         className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg text-sm hover:bg-gray-200 transition"
                       >
                         Cancel
@@ -292,29 +327,50 @@ export default function ProfilePage() {
                   <div className="space-y-3">
                     <div className="flex items-center gap-3 py-2 border-b border-gray-100">
                       <User size={16} className="text-gray-400" />
-                      <span className="text-sm text-gray-600 flex-1">Full Name</span>
-                      <span className="text-sm font-medium text-gray-900">{user?.name}</span>
+                      <span className="text-sm text-gray-600 flex-1">
+                        Full Name
+                      </span>
+                      <span className="text-sm font-medium text-gray-900">
+                        {user?.name}
+                      </span>
                     </div>
                     <div className="flex items-center gap-3 py-2 border-b border-gray-100">
                       <Mail size={16} className="text-gray-400" />
-                      <span className="text-sm text-gray-600 flex-1">Email Address</span>
-                      <span className="text-sm font-medium text-gray-900">{user?.email}</span>
+                      <span className="text-sm text-gray-600 flex-1">
+                        Email Address
+                      </span>
+                      <span className="text-sm font-medium text-gray-900">
+                        {user?.email}
+                      </span>
                     </div>
                     <div className="flex items-center gap-3 py-2 border-b border-gray-100">
                       <Phone size={16} className="text-gray-400" />
-                      <span className="text-sm text-gray-600 flex-1">Phone Number</span>
-                      <span className="text-sm font-medium text-gray-900">{user?.phone || "Not added"}</span>
+                      <span className="text-sm text-gray-600 flex-1">
+                        Phone Number
+                      </span>
+                      <span className="text-sm font-medium text-gray-900">
+                        {user?.phone || "Not added"}
+                      </span>
                     </div>
                     <div className="flex items-center gap-3 py-2 border-b border-gray-100">
                       <MapPin size={16} className="text-gray-400" />
-                      <span className="text-sm text-gray-600 flex-1">Location</span>
-                      <span className="text-sm font-medium text-gray-900">{user?.location || "Not added"}</span>
+                      <span className="text-sm text-gray-600 flex-1">
+                        Location
+                      </span>
+                      <span className="text-sm font-medium text-gray-900">
+                        {user?.location || "Not added"}
+                      </span>
                     </div>
                     <div className="flex items-center gap-3 py-2">
                       <Calendar size={16} className="text-gray-400" />
-                      <span className="text-sm text-gray-600 flex-1">Member Since</span>
+                      <span className="text-sm text-gray-600 flex-1">
+                        Member Since
+                      </span>
                       <span className="text-sm font-medium text-gray-900">
-                        {new Date(user?.createdAt).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
+                        {new Date(user?.createdAt).toLocaleDateString("en-US", {
+                          month: "long",
+                          year: "numeric",
+                        })}
                       </span>
                     </div>
                   </div>
@@ -329,7 +385,9 @@ export default function ProfilePage() {
                 >
                   <div className="flex items-center gap-3">
                     <Key size={16} className="text-gray-500" />
-                    <span className="text-sm text-gray-700">Change Password</span>
+                    <span className="text-sm text-gray-700">
+                      Change Password
+                    </span>
                   </div>
                   <ChevronRight size={16} className="text-gray-400" />
                 </button>

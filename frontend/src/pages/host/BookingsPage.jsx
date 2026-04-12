@@ -69,8 +69,8 @@ function BookingsPage() {
 
   if (loading) {
     return (
-      <div className="p-6 text-gray-500 text-sm">
-        Loading bookings...
+      <div className="flex items-center justify-center h-96">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600" />
       </div>
     );
   }
@@ -144,9 +144,7 @@ function BookingsPage() {
                     {b.property}
                   </span>
 
-                  <span className="text-sm text-gray-500">
-                    {b.dates}
-                  </span>
+                  <span className="text-sm text-gray-500">{b.dates}</span>
 
                   <span className="text-sm font-semibold text-gray-900">
                     {b.amount}
@@ -181,14 +179,10 @@ function BookingsPage() {
                     </span>
                   </div>
 
-                  <p className="text-xs text-gray-500 pl-9">
-                    {b.property}
-                  </p>
+                  <p className="text-xs text-gray-500 pl-9">{b.property}</p>
 
                   <div className="flex items-center justify-between pl-9">
-                    <span className="text-xs text-gray-400">
-                      {b.dates}
-                    </span>
+                    <span className="text-xs text-gray-400">{b.dates}</span>
                     <span className="text-sm font-bold text-gray-900">
                       {b.amount}
                     </span>
