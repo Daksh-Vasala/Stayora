@@ -3,14 +3,20 @@ const router = express.Router();
 
 const {
   createReview,
-  getReviews,
-  deleteReview
+  getReviewByBooking,
+  updateReview,
+  deleteReview,
+  getPropertyReviews
 } = require("../controllers/reviewController");
 
 const authMiddleware = require("../middlewares/authMiddleware");
 
-router.post("/", authMiddleware, createReview);
-router.get("/", getReviews);
-router.delete("/:id", authMiddleware, deleteReview);
+router.use(authMiddleware)
+router.post("/:id", createReview);
+router.get("/booking/:id", getReviewByBooking);
+router.get("/property/:id", getPropertyReviews);
 
+// In your review routes file
+router.put("/:id", updateReview);
+router.delete("/:id", deleteReview);
 module.exports = router;

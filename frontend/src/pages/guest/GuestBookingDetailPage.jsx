@@ -1,4 +1,4 @@
-// pages/BookingDetailPage.jsx
+// pages/BookingDetailPage.jsx - Updated with your controllers
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
@@ -27,8 +27,9 @@ import {
   CreditCard,
   Star,
   MessageCircle,
-  User,
+  Edit3,
 } from "lucide-react";
+import { useAuth } from "../../context/AuthContext";
 
 const amenityIcons = {
   wifi: Wifi,
@@ -56,9 +57,21 @@ export default function GuestBookingDetailPage() {
   const [showCancelModal, setShowCancelModal] = useState(false);
   const [showReportModal, setShowReportModal] = useState(false);
   const [reportReason, setReportReason] = useState("");
+  const { user } = useAuth()
+  
+  // Review states
+  const [showReviewModal, setShowReviewModal] = useState(false);
+  const [existingReview, setExistingReview] = useState(null);
+  const [reviewData, setReviewData] = useState({
+    rating: 0,
+    comment: "",
+  });
+  const [hoveredRating, setHoveredRating] = useState(0);
+  const [submittingReview, setSubmittingReview] = useState(false);
 
   useEffect(() => {
     fetchBooking();
+    checkExistingReview();
   }, [id]);
 
   const fetchBooking = async () => {
@@ -69,6 +82,22 @@ export default function GuestBookingDetailPage() {
       toast.error("Failed to load booking");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const checkExistingReview = async () => {
+    try {
+      const { data } = await axios.get(`/reviews/booking/${id}`);
+      if (data.review) {
+        setExistingReview(data.review);
+        setReviewData({
+          rating: data.review.rating,
+          comment: data.review.comment,
+        });
+      }
+    } catch (err) {
+      // No review exists
+      console.log("No review found");
     }
   };
 
@@ -99,17 +128,62 @@ export default function GuestBookingDetailPage() {
   };
 
   const handleMessageHost = async () => {
+  if (!user) {
+    toast.error("Login first");
+    return navigate("/login");
+  }
+  if (property?.host?._id === user.id) {
+    return toast.info("This is your property");
+  }
+  try {
+    // Your createChat endpoint already checks for existing chat!
+    // It returns existing chat if found, or creates a new one
+    const { data } = await axios.post("/chats", {
+      receiverId: property.host._id,
+      property: property._id,
+    });
+    navigate("/messages", { state: { chatId: data._id } });
+  } catch (error) {
+    toast.error(error?.response?.data?.message || "Something went wrong");
+  }
+};
+
+  const handleSubmitReview = async () => {
+    if (reviewData.rating === 0) {
+      toast.error("Please select a rating");
+      return;
+    }
+    if (!reviewData.comment.trim()) {
+      toast.error("Please write a review");
+      return;
+    }
+
     try {
-      const { data } = await axios.post("/chats", {
-        receiverId: booking.host._id,
-        property: booking.property._id,
-      });
-      navigate("/messages", {
-        state: { chatId: data._id },
-      });
-    } catch (error) {
-      console.error(error);
-      toast.error("Failed to start conversation");
+      setSubmittingReview(true);
+      
+      if (existingReview) {
+        // Update existing review
+        await axios.put(`/reviews/${existingReview._id}`, {
+          rating: reviewData.rating,
+          comment: reviewData.comment,
+        });
+        toast.success("Review updated successfully!");
+      } else {
+        // Create new review - using booking ID from params
+        await axios.post(`/reviews/${id}`, {
+          rating: reviewData.rating,
+          comment: reviewData.comment,
+        });
+        toast.success("Review submitted successfully!");
+      }
+      
+      setShowReviewModal(false);
+      checkExistingReview(); // Refresh to show the review
+      fetchBooking(); // Refresh booking to update any review-related data
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Failed to submit review");
+    } finally {
+      setSubmittingReview(false);
     }
   };
 
@@ -161,6 +235,7 @@ export default function GuestBookingDetailPage() {
   const canReport = ["confirmed", "completed"].includes(booking?.status);
   const showPayButton = booking?.status === "pending" && booking?.paymentStatus === "unpaid";
   const isExpired = booking?.expiresAt && new Date(booking.expiresAt) < new Date();
+  const canReview = booking?.status === "completed" && booking?.paymentStatus === "paid";
 
   if (loading) {
     return (
@@ -253,6 +328,36 @@ export default function GuestBookingDetailPage() {
           </div>
         )}
 
+        {/* Review Banner - Only show when booking is completed and paid */}
+        {canReview && (
+          <div className="mb-6 p-4 bg-purple-50 rounded-xl border border-purple-100">
+            <div className="flex items-center justify-between flex-wrap gap-3">
+              <div className="flex items-center gap-3">
+                <Star size={20} className="text-purple-600" />
+                <div>
+                  <p className="text-sm font-medium text-purple-900">Share your experience</p>
+                  <p className="text-xs text-purple-700 mt-0.5">
+                    {existingReview 
+                      ? "You've already reviewed this property. You can edit your review." 
+                      : "Your feedback helps other travelers"}
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => setShowReviewModal(true)}
+                className={`px-4 py-2 rounded-lg font-medium transition flex items-center gap-2 ${
+                  existingReview
+                    ? "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                    : "bg-purple-600 text-white hover:bg-purple-700"
+                }`}
+              >
+                {existingReview ? <Edit3 size={14} /> : <Star size={14} />}
+                {existingReview ? "Edit Review" : "Write a Review"}
+              </button>
+            </div>
+          </div>
+        )}
+
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Main Content */}
           <div className="lg:col-span-2 space-y-5">
@@ -300,6 +405,39 @@ export default function GuestBookingDetailPage() {
                 </div>
               </div>
             </div>
+
+            {/* Display Existing Review */}
+            {existingReview && canReview && (
+              <div className="bg-white rounded-xl shadow-sm p-5">
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="font-semibold">Your Review</h3>
+                  <button
+                    onClick={() => setShowReviewModal(true)}
+                    className="text-sm text-blue-600 hover:text-blue-700"
+                  >
+                    Edit
+                  </button>
+                </div>
+                <div className="flex items-center gap-2 mb-2">
+                  {[1, 2, 3, 4, 5].map((star) => (
+                    <Star
+                      key={star}
+                      size={18}
+                      className={`${
+                        star <= existingReview.rating
+                          ? "fill-yellow-400 text-yellow-400"
+                          : "text-gray-300"
+                      }`}
+                    />
+                  ))}
+                  <span className="text-sm text-gray-600 ml-2">{existingReview.rating}/5</span>
+                </div>
+                <p className="text-gray-600 text-sm">{existingReview.comment}</p>
+                <p className="text-xs text-gray-400 mt-2">
+                  Posted on {new Date(existingReview.createdAt).toLocaleDateString()}
+                </p>
+              </div>
+            )}
           </div>
 
           {/* Sidebar */}
@@ -385,7 +523,7 @@ export default function GuestBookingDetailPage() {
               )}
             </div>
 
-            {/* Host Info Card - Enhanced */}
+            {/* Host Info Card */}
             <div className="bg-white rounded-xl shadow-sm p-5">
               <h3 className="font-semibold mb-4">Host Information</h3>
               <div className="flex items-start gap-4">
@@ -450,6 +588,85 @@ export default function GuestBookingDetailPage() {
           </div>
         </div>
       </div>
+
+      {/* Review Modal */}
+      {showReviewModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl max-w-md w-full p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-xl font-semibold">
+                {existingReview ? "Edit Your Review" : "Write a Review"}
+              </h3>
+              <button
+                onClick={() => setShowReviewModal(false)}
+                className="text-gray-400 hover:text-gray-600"
+              >
+                <XCircle size={24} />
+              </button>
+            </div>
+
+            <div className="mb-4">
+              <p className="text-sm text-gray-600 mb-2">{property.title}</p>
+              <p className="text-xs text-gray-400">
+                {formatDate(booking.checkIn)} - {formatDate(booking.checkOut)}
+              </p>
+            </div>
+
+            {/* Rating Input */}
+            <div className="mb-4">
+              <label className="block text-sm font-medium mb-2">Rating *</label>
+              <div className="flex gap-2">
+                {[1, 2, 3, 4, 5].map((star) => (
+                  <button
+                    key={star}
+                    onClick={() => setReviewData({ ...reviewData, rating: star })}
+                    onMouseEnter={() => setHoveredRating(star)}
+                    onMouseLeave={() => setHoveredRating(0)}
+                    className="focus:outline-none"
+                  >
+                    <Star
+                      size={32}
+                      className={`transition ${
+                        star <= (hoveredRating || reviewData.rating)
+                          ? "fill-yellow-400 text-yellow-400"
+                          : "text-gray-300"
+                      }`}
+                    />
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Review Input */}
+            <div className="mb-6">
+              <label className="block text-sm font-medium mb-2">Your Review *</label>
+              <textarea
+                value={reviewData.comment}
+                onChange={(e) => setReviewData({ ...reviewData, comment: e.target.value })}
+                placeholder="Share your experience..."
+                rows="4"
+                className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+
+            <div className="flex gap-3">
+              <button
+                onClick={() => setShowReviewModal(false)}
+                className="flex-1 py-2 border rounded-lg hover:bg-gray-50"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleSubmitReview}
+                disabled={submittingReview}
+                className="flex-1 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:opacity-50"
+              >
+                {submittingReview ? "Submitting..." : existingReview ? "Update" : "Submit"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Cancel Modal */}
       {showCancelModal && (
