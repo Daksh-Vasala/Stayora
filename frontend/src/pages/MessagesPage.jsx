@@ -118,10 +118,12 @@ const MessagesPage = () => {
   });
 
   return (
-    <div className="h-[calc(100vh-70px)] flex bg-white rounded-xl overflow-hidden border border-gray-200">
+    <div
+      className={`${isAdmin ? "min-h-screen" : "min-h-[calc(100vh-70px)]"} flex bg-white rounded-xl overflow-hidden border border-gray-200`}
+    >
       {/* LEFT PANEL */}
       <div
-        className={`w-full md:w-[320px] border-r border-gray-200 flex flex-col ${
+        className={`w-full md:w-[320px] border-r border-gray-200 flex flex-col min-h-0 ${
           selectedChat ? "hidden md:flex" : "flex"
         }`}
       >
@@ -222,7 +224,7 @@ const MessagesPage = () => {
 
       {/* RIGHT PANEL */}
       <div
-        className={`flex-1 flex flex-col ${
+        className={`flex-1 flex flex-col min-h-0 ${
           !selectedChat ? "hidden md:flex" : "flex"
         }`}
       >
@@ -270,7 +272,10 @@ const MessagesPage = () => {
 
                 <div>
                   <p className="text-sm font-semibold text-gray-900">
-                    {selectedChat.members?.find((m) => m._id !== user._id)?.name}
+                    {
+                      selectedChat.members?.find((m) => m._id !== user._id)
+                        ?.name
+                    }
                   </p>
                   {isAdmin && (
                     <p className="text-xs text-gray-500 mt-0.5">

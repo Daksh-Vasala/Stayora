@@ -7,9 +7,11 @@ import ListingCard from "../../components/property/ListingCard";
 function ListingsPage() {
   const [search, setSearch] = useState("");
   const [listings, setListings] = useState([]);
+  const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
   const getData = async () => {
     try {
+      setLoading(true);
       const res = await axios.get("/property/host");
 
       const normalized = res.data.data.map((item) => ({
@@ -30,9 +32,11 @@ function ListingsPage() {
       setListings(normalized);
     } catch (error) {
       console.log(error);
+    } finally {
+      setLoading(false);
     }
   };
-  
+
   const handleSoftDelete = async (id) => {
     try {
       const isConfirm = window.confirm("Do you want to delete this?");
@@ -47,13 +51,20 @@ function ListingsPage() {
   };
 
   useEffect(() => {
-
     getData();
   }, []);
 
   const filtered = listings.filter((l) =>
     l.title?.toLowerCase().includes(search.toLowerCase()),
   );
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-96">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-5 p-6">

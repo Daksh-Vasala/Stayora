@@ -13,7 +13,7 @@ function startBookingExpiryWorker() {
         {
           status: "cancelled",
           cancelledAt: now,
-          cancelledBy: "system",
+          cancelledBy: "admin",
           cancellationReason: "Payment timeout",
         },
       );

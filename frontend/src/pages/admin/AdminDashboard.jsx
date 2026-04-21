@@ -46,7 +46,7 @@ export default function AdminDashboard() {
         axios.get("/admin/recent-bookings"),
         axios.get("/admin/pending-properties"),
       ]);
-      
+
       setStats(statsRes.data.data);
       setRecentBookings(bookingsRes.data.data);
       setPendingProperties(propertiesRes.data.data);
@@ -75,17 +75,11 @@ export default function AdminDashboard() {
             <div className="flex items-center justify-between">
               <div>
                 <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
-                <p className="text-sm text-gray-500 mt-0.5">Welcome back, Admin</p>
+                <p className="text-sm text-gray-500 mt-0.5">
+                  Welcome back, Admin
+                </p>
               </div>
               <div className="flex items-center gap-3">
-                <div className="relative">
-                  <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-                  <input
-                    type="text"
-                    placeholder="Search..."
-                    className="pl-9 pr-4 py-1.5 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  />
-                </div>
                 <div className="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center">
                   <span className="text-sm font-medium text-white">A</span>
                 </div>
@@ -160,14 +154,22 @@ export default function AdminDashboard() {
             {/* Recent Bookings */}
             <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
               <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
-                <h3 className="text-sm font-semibold text-gray-900">Recent Bookings</h3>
-                <button onClick={() => navigate("/admin/bookings")} className="text-xs text-blue-600 hover:text-blue-700">
+                <h3 className="text-sm font-semibold text-gray-900">
+                  Recent Bookings
+                </h3>
+                <button
+                  onClick={() => navigate("/admin/bookings")}
+                  className="text-xs text-blue-600 hover:text-blue-700"
+                >
                   View all
                 </button>
               </div>
               <div className="divide-y divide-gray-100">
                 {recentBookings.map((booking) => (
-                  <div key={booking._id} className="px-5 py-3 flex items-center justify-between">
+                  <div
+                    key={booking._id}
+                    className="px-5 py-3 flex items-center justify-between"
+                  >
                     <div className="flex items-center gap-3">
                       <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center">
                         <span className="text-xs font-medium text-gray-600">
@@ -179,17 +181,20 @@ export default function AdminDashboard() {
                           {booking.property?.title}
                         </p>
                         <p className="text-xs text-gray-500">
-                          {booking.user?.name} • ₹{booking.totalPrice?.toLocaleString()}
+                          {booking.user?.name} • ₹
+                          {booking.totalPrice?.toLocaleString()}
                         </p>
                       </div>
                     </div>
-                    <span className={`text-xs px-2 py-0.5 rounded-full ${
-                      booking.status === "confirmed" 
-                        ? "bg-green-100 text-green-700"
-                        : booking.status === "pending"
-                        ? "bg-yellow-100 text-yellow-700"
-                        : "bg-red-100 text-red-700"
-                    }`}>
+                    <span
+                      className={`text-xs px-2 py-0.5 rounded-full ${
+                        booking.status === "confirmed"
+                          ? "bg-green-100 text-green-700"
+                          : booking.status === "pending"
+                            ? "bg-yellow-100 text-yellow-700"
+                            : "bg-red-100 text-red-700"
+                      }`}
+                    >
                       {booking.status}
                     </span>
                   </div>
@@ -202,10 +207,12 @@ export default function AdminDashboard() {
               <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <Clock size={16} className="text-yellow-600" />
-                  <h3 className="text-sm font-semibold text-gray-900">Pending Approval</h3>
+                  <h3 className="text-sm font-semibold text-gray-900">
+                    Pending Approval
+                  </h3>
                 </div>
-                <button 
-                  onClick={() => navigate("/admin/listings?filter=pending")} 
+                <button
+                  onClick={() => navigate("/admin/listings?filter=pending")}
                   className="text-xs text-blue-600 hover:text-blue-700 font-medium"
                 >
                   View all →
@@ -214,13 +221,23 @@ export default function AdminDashboard() {
               <div className="divide-y divide-gray-100">
                 {pendingProperties.length === 0 ? (
                   <div className="px-5 py-8 text-center">
-                    <CheckCircle size={32} className="text-green-500 mx-auto mb-2" />
-                    <p className="text-sm text-gray-500">No pending approvals</p>
-                    <p className="text-xs text-gray-400 mt-1">All properties are approved</p>
+                    <CheckCircle
+                      size={32}
+                      className="text-green-500 mx-auto mb-2"
+                    />
+                    <p className="text-sm text-gray-500">
+                      No pending approvals
+                    </p>
+                    <p className="text-xs text-gray-400 mt-1">
+                      All properties are approved
+                    </p>
                   </div>
                 ) : (
                   pendingProperties.map((property) => (
-                    <div key={property._id} className="px-5 py-3 hover:bg-gray-50 transition">
+                    <div
+                      key={property._id}
+                      className="px-5 py-3 hover:bg-gray-50 transition"
+                    >
                       <div className="flex items-start justify-between gap-3">
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 mb-1">
@@ -234,7 +251,9 @@ export default function AdminDashboard() {
                           <div className="flex items-center gap-3 text-xs text-gray-500">
                             <div className="flex items-center gap-1">
                               <MapPin size={10} />
-                              <span>{property.location?.city || "Unknown"}</span>
+                              <span>
+                                {property.location?.city || "Unknown"}
+                              </span>
                             </div>
                             <div className="flex items-center gap-1">
                               <User size={10} />
@@ -243,11 +262,16 @@ export default function AdminDashboard() {
                           </div>
                           <p className="text-xs font-semibold text-gray-900 mt-1.5">
                             ₹{property.pricePerNight?.toLocaleString() || 0}
-                            <span className="text-xs text-gray-400 font-normal"> /night</span>
+                            <span className="text-xs text-gray-400 font-normal">
+                              {" "}
+                              /night
+                            </span>
                           </p>
                         </div>
                         <button
-                          onClick={() => navigate(`/admin/listings/${property._id}`)}
+                          onClick={() =>
+                            navigate(`/admin/listings/${property._id}`)
+                          }
                           className="flex items-center gap-1 px-2 py-1 text-xs text-blue-600 hover:bg-blue-50 rounded-lg transition"
                         >
                           <Eye size={12} />
@@ -299,15 +323,19 @@ const StatCard = ({ title, value, icon: Icon, trend, trendUp, color }) => {
     purple: "bg-purple-50 text-purple-600",
     orange: "bg-orange-50 text-orange-600",
   };
-  
+
   return (
     <div className="bg-white rounded-2xl border border-gray-200 p-5">
       <div className="flex items-center justify-between mb-3">
-        <div className={`w-10 h-10 rounded-xl ${colors[color]} flex items-center justify-center`}>
+        <div
+          className={`w-10 h-10 rounded-xl ${colors[color]} flex items-center justify-center`}
+        >
           <Icon size={20} />
         </div>
         {trend && (
-          <div className={`flex items-center gap-1 text-xs ${trendUp ? "text-green-600" : "text-red-600"}`}>
+          <div
+            className={`flex items-center gap-1 text-xs ${trendUp ? "text-green-600" : "text-red-600"}`}
+          >
             {trendUp ? <TrendingUp size={12} /> : <TrendingDown size={12} />}
             {trend}
           </div>
@@ -320,13 +348,19 @@ const StatCard = ({ title, value, icon: Icon, trend, trendUp, color }) => {
 };
 
 // Quick Action Card
-const QuickActionCard = ({ title, description, icon: Icon, onClick, color }) => {
+const QuickActionCard = ({
+  title,
+  description,
+  icon: Icon,
+  onClick,
+  color,
+}) => {
   const colors = {
     blue: "hover:bg-blue-50",
     green: "hover:bg-green-50",
     purple: "hover:bg-purple-50",
   };
-  
+
   return (
     <button
       onClick={onClick}

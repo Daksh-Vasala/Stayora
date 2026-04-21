@@ -31,7 +31,7 @@ export default function ProfilePage() {
   const [updating, setUpdating] = useState(false);
   const [resending, setResending] = useState(false);
   const [resendMessage, setResendMessage] = useState(null);
-  const { handleLogout } = useAuth();
+  const { handleLogout, getUser } = useAuth();
 
   useEffect(() => {
     fetchUserProfile();
@@ -60,6 +60,8 @@ export default function ProfilePage() {
       setUser(response.data.data);
       setEditing(false);
       toast.success(response?.data?.message);
+      // Refresh global user context so navbar and other pages see updated data
+      await getUser();
     } catch (error) {
       console.error(error);
       toast.error(error?.response?.data?.message || "Something wen wrong");
@@ -232,7 +234,7 @@ export default function ProfilePage() {
               {/* Role-specific Dashboard Button */}
               {user?.role === "host" && (
                 <button
-                  onClick={() => navigate("/host/dashboard")}
+                  onClick={() => navigate("/host")}
                   className="mb-4 mt-5 w-full bg-orange-600 text-white py-2 rounded-lg text-sm font-medium hover:bg-orange-700 transition"
                 >
                   Go to Host Dashboard →

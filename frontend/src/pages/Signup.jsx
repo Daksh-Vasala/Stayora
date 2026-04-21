@@ -204,15 +204,6 @@ export default function Signup() {
             <div className="flex-1 h-px bg-slate-200"></div>
           </div>
 
-          {/* Google Sign In */}
-          <button className="w-full mt-6 border text-sm border-slate-300 py-3 rounded-xl flex items-center justify-center gap-4 hover:bg-slate-50 transition-colors">
-            <img
-              src="https://www.svgrepo.com/show/475656/google-color.svg"
-              className="w-5 h-5"
-            />
-            Sign in with Google
-          </button>
-
           <p className="text-sm mt-6 text-center text-slate-600">
             Already have an account?{" "}
             <Link

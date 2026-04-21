@@ -7,7 +7,7 @@ const getUserChats = async (req, res) => {
     const chats = await Chat.find({
       members: userId,
     })
-      .populate("members", "name email")
+      .populate("members", "name role email")
       .populate("lastMessage")
       .sort({ updatedAt: -1 });
 
@@ -22,22 +22,26 @@ const getUserChats = async (req, res) => {
 };
 
 const createChat = async (req, res) => {
-  const { receiverId, property } = req.body;
-  const senderId = req.user.id;
+  try {
+    const { receiverId } = req.body;
+    const senderId = req.user.id;
 
-  let chat = await Chat.findOne({
-    members: { $all: [senderId, receiverId] },
-    property,
-  });
-
-  if (!chat) {
-    chat = await Chat.create({
-      members: [senderId, receiverId],
-      property,
+    // Search for existing chat based ONLY on the two users
+    // This ensures there's only one chat between any two users, regardless of property
+    let chat = await Chat.findOne({
+      members: { $all: [senderId, receiverId] },
     });
-  }
 
-  res.json(chat);
+    if (!chat) {
+      chat = await Chat.create({
+        members: [senderId, receiverId],
+      });
+    }
+
+    res.json(chat);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
 };
 
 module.exports = { getUserChats, createChat };

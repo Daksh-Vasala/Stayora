@@ -21,7 +21,6 @@ import AdminDashboard from "../pages/admin/AdminDashboard";
 import AdminUsers from "../pages/admin/AdminUsers";
 import AdminListings from "../pages/admin/AdminListings";
 import AdminFinancials from "../pages/admin/AdminFinancials";
-import AdminMessages from "../pages/admin/AdminMessages";
 import AdminDisputes from "../pages/admin/AdminDisputes";
 import ForgotPassword from "../pages/ForgotPassword";
 import ResetPassword from "../pages/ResetPassword";
@@ -33,7 +32,6 @@ import ProfilePage from "../pages/ProfilePage";
 import VerificationPage from "../pages/VerificationPage";
 import ChangePassword from "../pages/ChangePassword";
 import GuestBookingDetailPage from "../pages/guest/GuestBookingDetailPage";
-import BecomeHostPage from "../pages/guest/BecomeHostPage";
 import GuestBookingSuccessPage from "../pages/guest/BookingSuccessPage";
 
 const router = createBrowserRouter([
@@ -108,14 +106,6 @@ const router = createBrowserRouter([
         element: (
           <ProtectedRoute allowedRoles={["guest", "host", "admin"]}>
             <ChangePassword />
-          </ProtectedRoute>
-        ),
-      },
-      {
-        path: "become-host",
-        element: (
-          <ProtectedRoute allowedRoles={["guest"]}>
-            <BecomeHostPage />
           </ProtectedRoute>
         ),
       },

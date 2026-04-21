@@ -93,16 +93,6 @@ function UserNavbar({ userRole, onLogout, user }) {
 
         {/* Right Section */}
         <div className="flex items-center gap-2 ml-auto md:ml-2">
-          {/* Guest CTA */}
-          {userRole === "guest" && (
-            <NavLink
-              to="/become-host"
-              className="hidden md:block bg-blue-600 text-white text-sm font-semibold px-5 py-2 rounded-full hover:bg-blue-700"
-            >
-              Become a Host
-            </NavLink>
-          )}
-
           {/* Public */}
           {!userRole && (
             <>

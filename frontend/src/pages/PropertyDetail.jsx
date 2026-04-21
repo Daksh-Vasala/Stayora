@@ -1,14 +1,33 @@
 import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import {
-  MapPin, Users, Star, Calendar, CheckCircle, MessageCircle, ArrowLeft,
-  ShieldCheck, Wifi, Car, Waves, Wind, Tv, UtensilsCrossed, Shield, Flame,
-  BedDouble, Bath, ChevronLeft, ChevronRight,
+  MapPin,
+  Users,
+  Star,
+  Calendar,
+  CheckCircle,
+  MessageCircle,
+  ArrowLeft,
+  ShieldCheck,
+  Wifi,
+  Car,
+  Waves,
+  Wind,
+  Tv,
+  UtensilsCrossed,
+  Shield,
+  Flame,
+  BedDouble,
+  Bath,
+  ChevronLeft,
+  ChevronRight,
+  Loader2,
 } from "lucide-react";
 import axios from "axios";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import { useMessaging } from "../hooks/useMessaging";
 
 const AMENITY_MAP = {
   wifi: { label: "Wi-Fi", Icon: Wifi },
@@ -21,16 +40,23 @@ const AMENITY_MAP = {
   security: { label: "Security", Icon: Shield },
 };
 
-const inp = "w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-blue-400 transition-all bg-white";
+const inp =
+  "w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-blue-400 transition-all bg-white";
 
 function PropertyDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { messageAboutProperty, isMessaging } = useMessaging();
   const [property, setProperty] = useState(null);
   const [reviews, setReviews] = useState([]);
   const [imgIdx, setImgIdx] = useState(0);
-  const [booking, setBooking] = useState({ checkIn: "", checkOut: "", guests: 1 });
+  const [booking, setBooking] = useState({
+    checkIn: "",
+    checkOut: "",
+    guests: 1,
+  });
+  const [reserveLoading, setReserveLoading] = useState(false);
 
   useEffect(() => {
     fetchProperty();
@@ -55,9 +81,13 @@ function PropertyDetail() {
     }
   };
 
-  const nights = booking.checkIn && booking.checkOut
-    ? Math.max((new Date(booking.checkOut) - new Date(booking.checkIn)) / 86400000, 0)
-    : 0;
+  const nights =
+    booking.checkIn && booking.checkOut
+      ? Math.max(
+          (new Date(booking.checkOut) - new Date(booking.checkIn)) / 86400000,
+          0,
+        )
+      : 0;
   const total = nights * (property?.pricePerNight || 0);
   const images = property?.images || [];
   const currImg = images[imgIdx]?.url || "";
@@ -70,6 +100,7 @@ function PropertyDetail() {
       toast.error("Please login to make a booking");
       return navigate("/login");
     }
+    setReserveLoading(true);
     try {
       const { data } = await axios.post("/bookings", {
         checkIn: booking.checkIn,
@@ -81,6 +112,8 @@ function PropertyDetail() {
       navigate(`/bookings/checkout/${data.data._id}`);
     } catch (error) {
       toast.error(error?.response?.data?.message || "Internal server error");
+    } finally {
+      setReserveLoading(false);
     }
   };
 
@@ -92,21 +125,14 @@ function PropertyDetail() {
     if (property?.host?._id === user.id) {
       return toast.info("This is your property");
     }
-    try {
-      const { data } = await axios.post("/chats", {
-        receiverId: property.host._id,
-        property: property._id,
-      });
-      navigate("/messages", { state: { chatId: data._id } });
-    } catch (error) {
-      toast.error(error?.response?.data?.message || "Something went wrong");
-    }
+
+    await messageAboutProperty(property.host._id, property);
   };
 
   if (!property) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="w-8 h-8 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
+      <div className="flex justify-center items-center min-h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
       </div>
     );
   }
@@ -124,17 +150,24 @@ function PropertyDetail() {
                   <span className="text-[11px] font-bold text-white bg-blue-600 px-2.5 py-1 rounded-full capitalize mb-2 inline-block">
                     {property.propertyType}
                   </span>
-                  <h1 className="text-xl font-bold text-gray-900">{property.title}</h1>
+                  <h1 className="text-xl font-bold text-gray-900">
+                    {property.title}
+                  </h1>
                   <p className="text-sm text-gray-400 flex items-center gap-1 mt-1">
                     <MapPin size={13} className="text-blue-500 shrink-0" />
-                    {property.location?.address && `${property.location.address}, `}
+                    {property.location?.address &&
+                      `${property.location.address}, `}
                     {property.location?.city}, {property.location?.country}
                   </p>
                 </div>
                 <div className="flex items-center gap-1 shrink-0">
                   <Star size={14} className="fill-yellow-400 text-yellow-400" />
-                  <span className="text-sm font-bold text-gray-900">{property.rating || 0}</span>
-                  <span className="text-xs text-gray-400">({property.reviewCount || 0} reviews)</span>
+                  <span className="text-sm font-bold text-gray-900">
+                    {property.rating || 0}
+                  </span>
+                  <span className="text-xs text-gray-400">
+                    ({property.reviewCount || 0} reviews)
+                  </span>
                 </div>
               </div>
 
@@ -145,7 +178,10 @@ function PropertyDetail() {
                   { Icon: BedDouble, v: `${property.beds} beds` },
                   { Icon: Bath, v: `${property.bathrooms} baths` },
                 ].map(({ Icon, v }, i) => (
-                  <span key={i} className="flex items-center gap-1.5 text-xs font-medium">
+                  <span
+                    key={i}
+                    className="flex items-center gap-1.5 text-xs font-medium"
+                  >
                     <Icon size={13} className="text-blue-600" />
                     {v}
                   </span>
@@ -157,13 +193,23 @@ function PropertyDetail() {
             {images.length > 0 && (
               <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
                 <div className="relative h-64 sm:h-80 rounded-xl overflow-hidden bg-gray-100">
-                  <img src={currImg} alt={property.title} className="w-full h-full object-cover" />
+                  <img
+                    src={currImg}
+                    alt={property.title}
+                    className="w-full h-full object-cover"
+                  />
                   {images.length > 1 && (
                     <>
-                      <button onClick={prev} className="absolute left-3 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-white/90 shadow flex items-center justify-center">
+                      <button
+                        onClick={prev}
+                        className="absolute left-3 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-white/90 shadow flex items-center justify-center"
+                      >
                         <ChevronLeft size={15} />
                       </button>
-                      <button onClick={next} className="absolute right-3 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-white/90 shadow flex items-center justify-center">
+                      <button
+                        onClick={next}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-white/90 shadow flex items-center justify-center"
+                      >
                         <ChevronRight size={15} />
                       </button>
                       <span className="absolute bottom-3 right-3 text-[11px] font-semibold bg-black/50 text-white px-2 py-0.5 rounded-full">
@@ -180,7 +226,11 @@ function PropertyDetail() {
                         onClick={() => setImgIdx(i)}
                         className={`shrink-0 w-16 h-12 rounded-xl overflow-hidden border-2 transition-all ${i === imgIdx ? "border-blue-600" : "border-transparent opacity-60 hover:opacity-100"}`}
                       >
-                        <img src={img.url} alt="" className="w-full h-full object-cover" />
+                        <img
+                          src={img.url}
+                          alt=""
+                          className="w-full h-full object-cover"
+                        />
                       </button>
                     ))}
                   </div>
@@ -190,22 +240,36 @@ function PropertyDetail() {
 
             {/* Description */}
             <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
-              <h2 className="text-sm font-bold text-gray-900 mb-2">About this place</h2>
-              <p className="text-[13.5px] text-gray-600 leading-relaxed">{property.description}</p>
+              <h2 className="text-sm font-bold text-gray-900 mb-2">
+                About this place
+              </h2>
+              <p className="text-[13.5px] text-gray-600 leading-relaxed">
+                {property.description}
+              </p>
             </div>
 
             {/* Amenities */}
             {property.amenities?.length > 0 && (
               <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
-                <h2 className="text-sm font-bold text-gray-900 mb-3">Amenities</h2>
+                <h2 className="text-sm font-bold text-gray-900 mb-3">
+                  Amenities
+                </h2>
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                   {property.amenities.map((a) => {
                     const cfg = AMENITY_MAP[a];
                     if (!cfg) return null;
                     return (
-                      <div key={a} className="flex items-center gap-2.5 bg-blue-50 px-3 py-2.5 rounded-xl">
-                        <cfg.Icon size={14} className="text-blue-600 shrink-0" />
-                        <span className="text-[13px] font-medium text-blue-700">{cfg.label}</span>
+                      <div
+                        key={a}
+                        className="flex items-center gap-2.5 bg-blue-50 px-3 py-2.5 rounded-xl"
+                      >
+                        <cfg.Icon
+                          size={14}
+                          className="text-blue-600 shrink-0"
+                        />
+                        <span className="text-[13px] font-medium text-blue-700">
+                          {cfg.label}
+                        </span>
                       </div>
                     );
                   })}
@@ -224,16 +288,29 @@ function PropertyDetail() {
               ) : (
                 <div className="space-y-4">
                   {reviews.slice(0, 4).map((review) => (
-                    <div key={review._id} className="border-b border-gray-100 pb-4 last:border-0">
+                    <div
+                      key={review._id}
+                      className="border-b border-gray-100 pb-4 last:border-0"
+                    >
                       <div className="flex items-center gap-2 mb-2">
                         <div className="w-8 h-8 rounded-full bg-blue-100 text-blue-600 text-xs font-bold flex items-center justify-center">
                           {review.user?.name?.[0]?.toUpperCase() || "G"}
                         </div>
                         <div>
-                          <p className="text-sm font-semibold text-gray-900">{review.user?.name || "Guest"}</p>
+                          <p className="text-sm font-semibold text-gray-900">
+                            {review.user?.name || "Guest"}
+                          </p>
                           <div className="flex items-center gap-1">
-                            {[1,2,3,4,5].map((star) => (
-                              <Star key={star} size={12} className={star <= review.rating ? "fill-yellow-400 text-yellow-400" : "text-gray-300"} />
+                            {[1, 2, 3, 4, 5].map((star) => (
+                              <Star
+                                key={star}
+                                size={12}
+                                className={
+                                  star <= review.rating
+                                    ? "fill-yellow-400 text-yellow-400"
+                                    : "text-gray-300"
+                                }
+                              />
                             ))}
                           </div>
                         </div>
@@ -258,44 +335,95 @@ function PropertyDetail() {
           <div>
             <div className="bg-white rounded-2xl border border-gray-100 shadow-lg p-5 sticky top-20">
               <div className="mb-5">
-                <span className="text-2xl font-bold text-gray-900">₹{property.pricePerNight?.toLocaleString()}</span>
+                <span className="text-2xl font-bold text-gray-900">
+                  ₹{property.pricePerNight?.toLocaleString()}
+                </span>
                 <span className="text-sm text-gray-400"> / night</span>
                 {nights > 0 && (
                   <p className="text-xs text-gray-400 mt-1">
                     {nights} night{nights > 1 ? "s" : ""} ·{" "}
-                    <span className="font-bold text-gray-900">₹{total.toLocaleString()} total</span>
+                    <span className="font-bold text-gray-900">
+                      ₹{total.toLocaleString()} total
+                    </span>
                   </p>
                 )}
               </div>
 
               <div className="space-y-3 mb-4">
                 <div>
-                  <label className="block text-xs font-semibold text-gray-500 mb-1">Check-in</label>
-                  <input type="date" className={inp} value={booking.checkIn}
+                  <label className="block text-xs font-semibold text-gray-500 mb-1">
+                    Check-in
+                  </label>
+                  <input
+                    type="date"
+                    className={inp}
+                    value={booking.checkIn}
                     min={new Date().toISOString().split("T")[0]}
-                    onChange={(e) => setBooking({ ...booking, checkIn: e.target.value })} />
+                    onChange={(e) =>
+                      setBooking({ ...booking, checkIn: e.target.value })
+                    }
+                  />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-gray-500 mb-1">Check-out</label>
-                  <input type="date" className={inp} value={booking.checkOut}
-                    min={booking.checkIn || new Date().toISOString().split("T")[0]}
-                    onChange={(e) => setBooking({ ...booking, checkOut: e.target.value })} />
+                  <label className="block text-xs font-semibold text-gray-500 mb-1">
+                    Check-out
+                  </label>
+                  <input
+                    type="date"
+                    className={inp}
+                    value={booking.checkOut}
+                    min={
+                      booking.checkIn || new Date().toISOString().split("T")[0]
+                    }
+                    onChange={(e) =>
+                      setBooking({ ...booking, checkOut: e.target.value })
+                    }
+                  />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-gray-500 mb-1">Guests</label>
-                  <select className={inp} value={booking.guests}
-                    onChange={(e) => setBooking({ ...booking, guests: parseInt(e.target.value) })}>
-                    {Array.from({ length: property.maxGuests || 6 }, (_, i) => i + 1).map((g) => (
-                      <option key={g} value={g}>{g} guest{g > 1 ? "s" : ""}</option>
+                  <label className="block text-xs font-semibold text-gray-500 mb-1">
+                    Guests
+                  </label>
+                  <select
+                    className={inp}
+                    value={booking.guests}
+                    onChange={(e) =>
+                      setBooking({
+                        ...booking,
+                        guests: parseInt(e.target.value),
+                      })
+                    }
+                  >
+                    {Array.from(
+                      { length: property.maxGuests || 6 },
+                      (_, i) => i + 1,
+                    ).map((g) => (
+                      <option key={g} value={g}>
+                        {g} guest{g > 1 ? "s" : ""}
+                      </option>
                     ))}
                   </select>
                 </div>
               </div>
 
-              <button disabled={!booking.checkIn || !booking.checkOut || nights <= 0}
-                className="w-full bg-blue-600 hover:bg-blue-700 disabled:opacity-40 disabled:cursor-not-allowed text-white py-3 rounded-xl font-bold text-sm transition-colors"
-                onClick={reserveBooking}>
-                Reserve Now
+              <button
+                disabled={
+                  !booking.checkIn ||
+                  !booking.checkOut ||
+                  nights <= 0 ||
+                  reserveLoading
+                }
+                className="w-full bg-blue-600 hover:bg-blue-700 disabled:opacity-40 disabled:cursor-not-allowed text-white py-3 rounded-xl font-bold text-sm transition-colors flex items-center justify-center gap-2"
+                onClick={reserveBooking}
+              >
+                {reserveLoading ? (
+                  <>
+                    <Loader2 className="animate-spin" size={16} />
+                    Processing...
+                  </>
+                ) : (
+                  "Reserve Now"
+                )}
               </button>
 
               <div className="mt-3 flex items-center gap-1.5 text-[11px] text-gray-400">
@@ -310,13 +438,27 @@ function PropertyDetail() {
                       {property.host.name?.[0]?.toUpperCase() || "H"}
                     </div>
                     <div>
-                      <p className="text-sm font-semibold text-gray-900">{property.host.name || "Host"}</p>
+                      <p className="text-sm font-semibold text-gray-900">
+                        {property.host.name || "Host"}
+                      </p>
                       <p className="text-[11px] text-gray-400">Verified Host</p>
                     </div>
                   </div>
-                  <button onClick={handleMessageHost}
-                    className="mt-3 w-full flex items-center justify-center gap-2 py-2.5 rounded-xl border border-gray-200 text-sm font-semibold text-gray-600 hover:bg-gray-50 transition-colors">
-                    <MessageCircle size={14} /> Message Host
+                  <button
+                    onClick={handleMessageHost}
+                    disabled={isMessaging}
+                    className="mt-3 w-full flex items-center justify-center gap-2 py-2.5 rounded-xl border border-gray-200 text-sm font-semibold text-gray-600 hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {isMessaging ? (
+                      <>
+                        <Loader2 className="animate-spin" size={14} />
+                        Messaging...
+                      </>
+                    ) : (
+                      <>
+                        <MessageCircle size={14} /> Message Host
+                      </>
+                    )}
                   </button>
                 </div>
               )}

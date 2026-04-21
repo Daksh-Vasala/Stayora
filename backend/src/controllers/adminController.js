@@ -3,6 +3,7 @@ const User = require("../models/userModel");
 const Property = require("../models/propertyModel");
 const Booking = require("../models/bookingModel");
 const Dispute = require("../models/disputeModel");
+const mongoose = require("mongoose")
 
 const getAllUsers = async (req, res) => {
   try {
@@ -138,18 +139,61 @@ const toggleStatus = async (req, res) => {
     if (!booking) {
       return res.status(404).json({ message: "Booking not found" });
     }
-    const { status } = req.body;
-    const oldStatus = booking.status;
-    booking.status = status || oldStatus;
+
+    const newStatus = req.body.status;
+    const currentStatus = booking.status;
+
+    if (["cancelled", "completed"].includes(currentStatus)) {
+      return res.status(400).json({
+        message: "Booking already finalized",
+      });
+    }
+
+    // 🎯 Handle transitions
+    if (newStatus === "confirmed") {
+      if (booking.paymentStatus !== "paid") {
+        return res.status(400).json({
+          message: "Cannot confirm unpaid booking",
+        });
+      }
+      booking.status = "confirmed";
+    }
+
+    else if (newStatus === "cancelled") {
+      booking.status = "cancelled";
+      booking.cancelledAt = new Date();
+    }
+
+    else if (newStatus === "completed") {
+      const now = new Date();
+      if (now < booking.checkOut) {
+        return res.status(400).json({
+          message: "Cannot complete before checkout",
+        });
+      }
+      booking.status = "completed";
+      booking.completedAt = new Date();
+    }
+
+    else {
+      return res.status(400).json({
+        message: "Invalid status transition",
+      });
+    }
+
     await booking.save();
 
     res.json({
       success: true,
       message: "Booking status updated",
+      booking,
     });
+
   } catch (error) {
     console.log(error);
-    res.status(500).json({ message: error.message || "Internal server error" });
+    res.status(500).json({
+      message: error.message || "Internal server error",
+    });
   }
 };
 // 1. GET /api/admin/stats - Dashboard statistics
