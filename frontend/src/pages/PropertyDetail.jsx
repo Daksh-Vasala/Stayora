@@ -100,6 +100,18 @@ function PropertyDetail() {
       toast.error("Please login to make a booking");
       return navigate("/login");
     }
+
+    const oneYearFromNow = new Date();
+    oneYearFromNow.setFullYear(oneYearFromNow.getFullYear() + 1);
+
+    if (
+      new Date(booking.checkIn) > oneYearFromNow ||
+      new Date(booking.checkOut) > oneYearFromNow
+    ) {
+      toast.error("Bookings cannot be more than one year from now");
+      return;
+    }
+
     setReserveLoading(true);
     try {
       const { data } = await axios.post("/bookings", {

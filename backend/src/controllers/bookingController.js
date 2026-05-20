@@ -16,23 +16,6 @@ const createBooking = async (req, res) => {
       });
     }
 
-    const existingBooking = await Booking.findOne({
-      property: propertyId,
-      status: { $in: ["pending", "confirmed"] },
-      $or: [
-        {
-          checkIn: { $lt: checkOut },
-          checkOut: { $gt: checkIn },
-        },
-      ],
-    });
-
-    if (existingBooking) {
-      return res.status(400).json({
-        message: "Property not available for booking",
-      });
-    }
-
     const property = await Property.findById(propertyId);
     if (!property) {
       return res.status(400).json({
@@ -45,6 +28,15 @@ const createBooking = async (req, res) => {
     const checkInDate = new Date(checkIn);
     const checkOutDate = new Date(checkOut);
 
+    const oneYearFromNow = new Date();
+    oneYearFromNow.setFullYear(oneYearFromNow.getFullYear() + 1);
+
+    if (checkInDate > oneYearFromNow || checkOutDate > oneYearFromNow) {
+      return res.status(400).json({
+        message: "Booking dates cannot be more than one year from now",
+      });
+    }
+
     // Calculate nights
     const nights = Math.ceil(
       (checkOutDate - checkInDate) / (1000 * 60 * 60 * 24),
@@ -56,16 +48,36 @@ const createBooking = async (req, res) => {
       });
     }
 
+    // Check overlapping bookings
+    const existingBooking = await Booking.findOne({
+      property: propertyId,
+      status: { $in: ["pending", "confirmed"] },
+      $or: [
+        {
+          checkIn: { $lt: checkOutDate },
+          checkOut: { $gt: checkInDate },
+        },
+      ],
+    });
+
+    if (existingBooking) {
+      return res.status(400).json({
+        message: "Property not available for booking",
+      });
+    }
+
+    // Calculate pricing
     const subtotal = nights * property.pricePerNight;
 
-    const taxRate = 0.05; // 5% tax
+    const taxRate = 0.05;
     const taxes = Math.round(subtotal * taxRate);
+
     const totalPrice = subtotal + taxes;
 
     const booking = await Booking.create({
       property: propertyId,
-      checkIn,
-      checkOut,
+      checkIn: checkInDate,
+      checkOut: checkOutDate,
       host,
       guest: req.user.id,
       guestsCount,
@@ -79,7 +91,10 @@ const createBooking = async (req, res) => {
     });
   } catch (error) {
     console.log(error);
-    res.status(500).json({ message: error.message });
+
+    res.status(500).json({
+      message: error.message,
+    });
   }
 };
 
