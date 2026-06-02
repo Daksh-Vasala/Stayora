@@ -9,7 +9,10 @@ const startBookingExpiryWorker = require("./src/workers/bookingExpiryWorker");
 const cookieParser = require("cookie-parser");
 app.use(
   cors({
-    origin: "http://localhost:5173",
+    origin: [
+      "http://localhost:5173",
+      "https://stayora-frontend.onrender.com"
+    ],
     credentials: true,
   }),
 );

@@ -32,7 +32,7 @@ import ProfilePage from "../pages/ProfilePage";
 import VerificationPage from "../pages/VerificationPage";
 import ChangePassword from "../pages/ChangePassword";
 import GuestBookingDetailPage from "../pages/guest/GuestBookingDetailPage";
-import GuestBookingSuccessPage from "../pages/guest/BookingSuccessPage";
+import GuestBookingSuccessPage from "../pages/guest/GuestBookingSuccessPage";
 
 const router = createBrowserRouter([
   // PUBLIC ROUTES
