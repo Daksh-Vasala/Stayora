@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { NavLink } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 import {
   Bell,
   Heart,
@@ -22,6 +22,7 @@ import {
 function UserNavbar({ userRole, onLogout, user }) {
   const [mobileMenu, setMobileMenu] = useState(false);
   const [accountMenu, setAccountMenu] = useState(false);
+  const navigate = useNavigate();
 
   /* ---------------- NAV LINKS ---------------- */
 
@@ -168,6 +169,8 @@ function UserNavbar({ userRole, onLogout, user }) {
             onClick={() => {
               setAccountMenu(false);
               onLogout();
+              navigate("/login")
+
             }}
             className="flex items-center gap-3 px-3 py-2 text-sm text-red-600 hover:bg-red-50 rounded w-full"
           >
