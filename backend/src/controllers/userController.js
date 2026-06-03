@@ -303,6 +303,7 @@ const forgotPassword = async (req, res) => {
 
     const user = await User.findOne({ email });
 
+    // Always respond same message (security best practice)
     if (!user) {
       return res.status(200).json({
         message: "If email exists, reset link sent",
@@ -321,31 +322,37 @@ const forgotPassword = async (req, res) => {
 
     await user.save();
 
-    const resetURL = `http://localhost:5173/reset-password/${resetToken}`;
+    const resetURL = `${process.env.FRONTEND_URL}/reset-password/${resetToken}`;
 
     try {
       await sendTemplateMail(
         user.email,
         "Password Reset Request",
         "resetPassword.html",
-        { resetURL },
+        { resetURL }
       );
+
+      return res.status(200).json({
+        message: "If email exists, reset link sent",
+      });
+
     } catch (err) {
+      // rollback token if email fails
       user.resetPasswordToken = undefined;
       user.resetPasswordExpire = undefined;
       await user.save();
+
+      console.error("EMAIL ERROR ❌:", err);
 
       return res.status(500).json({
         message: "Email could not be sent",
       });
     }
 
-    res.status(200).json({
-      message: "If email exists, reset link sent",
-    });
   } catch (error) {
-    console.log(error);
-    res.status(500).json({
+    console.error("FORGOT PASSWORD ERROR ❌:", error);
+
+    return res.status(500).json({
       message: error.message || "Internal server error",
     });
   }
