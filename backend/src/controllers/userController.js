@@ -1,12 +1,10 @@
 const User = require("../models/userModel.js");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
-const sendTemplateMail = require("../utils/mailUtil.js");
 const { sendToken } = require("../utils/jwt.js");
 const crypto = require("crypto");
 const bookingModel = require("../models/bookingModel.js");
-const sendWelcomeAndVerificationMail = require("../utils/sendWelcomeAndVerificationMail.js");
-const sendVerificationEmail = require("../utils/sendVerifcationEmail.js");
+const sendEmail = require("../utils/resendMail.js");
 
 const register = async (req, res) => {
   try {
@@ -40,7 +38,17 @@ const register = async (req, res) => {
     createdUser.verificationExpires = Date.now() + 24 * 60 * 60 * 1000;
     await createdUser.save();
 
-    await sendWelcomeAndVerificationMail(createdUser, verificationToken);
+    const verificationLink = `${process.env.FRONTEND_URL}/verify-email/${verificationToken}`;
+
+    await sendEmail({
+      to: createdUser.email,
+      subject: "Welcome to Stayora! Verify your email",
+      html: `
+    <h2>Welcome ${createdUser.name}</h2>
+    <p>Please verify your email:</p>
+    <a href="${verificationLink}">Verify Email</a>
+  `,
+    });
 
     //creating token by taking unique fields like user id
     sendToken(createdUser, res);
@@ -155,7 +163,16 @@ const resendVerification = async (req, res) => {
     await user.save();
 
     // Send verification email
-    await sendVerificationEmail(user, verificationToken);
+    const verificationLink = `${process.env.FRONTEND_URL}/verify-email/${verificationToken}`;
+
+    await sendEmail({
+      to: user.email,
+      subject: "Verify your email",
+      html: `
+    <p>Click below to verify your email:</p>
+    <a href="${verificationLink}">Verify Email</a>
+  `,
+    });
 
     res.status(200).json({
       success: true,
@@ -170,24 +187,22 @@ const resendVerification = async (req, res) => {
   }
 };
 
-
-
 const changePassword = async (req, res) => {
   try {
     const { id } = req.user;
     const { currentPassword, newPassword } = req.body;
 
-    if(!currentPassword || !newPassword){
+    if (!currentPassword || !newPassword) {
       return res.status(400).json({
         success: false,
-        message: "Current password and new password are required"
+        message: "Current password and new password are required",
       });
     }
 
     if (newPassword.length < 6) {
       return res.status(400).json({
         success: false,
-        message: "New password must be at least 6 characters"
+        message: "New password must be at least 6 characters",
       });
     }
 
@@ -196,7 +211,7 @@ const changePassword = async (req, res) => {
     if (!user) {
       return res.status(404).json({
         success: false,
-        message: "User not found"
+        message: "User not found",
       });
     }
 
@@ -205,7 +220,7 @@ const changePassword = async (req, res) => {
     if (!isMatch) {
       return res.status(401).json({
         success: false,
-        message: "Current password is incorrect"
+        message: "Current password is incorrect",
       });
     }
 
@@ -216,9 +231,8 @@ const changePassword = async (req, res) => {
 
     res.status(200).json({
       success: true,
-      message: "Password changed successfully"
+      message: "Password changed successfully",
     });
-
   } catch (error) {
     console.log(error);
     res.status(500).json({
@@ -325,17 +339,20 @@ const forgotPassword = async (req, res) => {
     const resetURL = `${process.env.FRONTEND_URL}/reset-password/${resetToken}`;
 
     try {
-      await sendTemplateMail(
-        user.email,
-        "Password Reset Request",
-        "resetPassword.html",
-        { resetURL }
-      );
+      await sendEmail({
+        to: user.email,
+        subject: "Password Reset Request",
+        html: `
+    <h2>Password Reset</h2>
+    <p>Click below to reset your password:</p>
+    <a href="${resetURL}">Reset Password</a>
+    <p>This link expires in 10 minutes.</p>
+  `,
+      });
 
       return res.status(200).json({
         message: "If email exists, reset link sent",
       });
-
     } catch (err) {
       // rollback token if email fails
       user.resetPasswordToken = undefined;
@@ -348,7 +365,6 @@ const forgotPassword = async (req, res) => {
         message: "Email could not be sent",
       });
     }
-
   } catch (error) {
     console.error("FORGOT PASSWORD ERROR ❌:", error);
 
@@ -441,32 +457,32 @@ const updateUserProfile = async (req, res) => {
   try {
     const userId = req.user.id;
     const { name, phone, location } = req.body;
-    
+
     // Find user
     const user = await User.findById(userId);
     if (!user) {
       return res.status(404).json({
         success: false,
-        message: "User not found"
+        message: "User not found",
       });
     }
-    
+
     // Update only allowed fields
     if (name !== undefined && name.trim() !== "") {
       user.name = name.trim();
     }
-    
+
     if (phone !== undefined) {
       // Check if phone is already taken by another user
       if (phone && phone.trim() !== "") {
-        const existingUser = await User.findOne({ 
-          phone: phone.trim(), 
-          _id: { $ne: userId } 
+        const existingUser = await User.findOne({
+          phone: phone.trim(),
+          _id: { $ne: userId },
         });
         if (existingUser) {
           return res.status(400).json({
             success: false,
-            message: "Phone number already in use by another account"
+            message: "Phone number already in use by another account",
           });
         }
         user.phone = phone.trim();
@@ -474,14 +490,14 @@ const updateUserProfile = async (req, res) => {
         user.phone = "";
       }
     }
-    
+
     if (location !== undefined) {
       user.location = location.trim() || "";
     }
-    
+
     // Save updated user
     await user.save();
-    
+
     // Return updated user (excluding sensitive fields)
     const updatedUser = {
       _id: user._id,
@@ -494,20 +510,19 @@ const updateUserProfile = async (req, res) => {
       is_verified: user.is_verified,
       isActive: user.isActive,
       createdAt: user.createdAt,
-      updatedAt: user.updatedAt
+      updatedAt: user.updatedAt,
     };
-    
+
     res.status(200).json({
       success: true,
       message: "Profile updated successfully",
-      data: updatedUser
+      data: updatedUser,
     });
-    
   } catch (error) {
     console.error("Update profile error:", error);
     res.status(500).json({
       success: false,
-      message: "Failed to update profile. Please try again."
+      message: "Failed to update profile. Please try again.",
     });
   }
 };
@@ -522,5 +537,5 @@ module.exports = {
   verifyEmail,
   resendVerification,
   changePassword,
-  updateUserProfile
+  updateUserProfile,
 };

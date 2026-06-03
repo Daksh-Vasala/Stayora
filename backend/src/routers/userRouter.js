@@ -37,4 +37,15 @@ router.put("/change-password", authMiddleware, changePassword)
 
 router.put("/update", authMiddleware, updateUserProfile);
 
+router.get("/test-email", async (req, res) => {
+  const sendEmail = require("../utils/resendMail");
+
+  await sendEmail({
+    to: "daksh.dev.projects@gmail.com",
+    subject: "Test Email",
+    html: "<h1>Resend is working 🚀</h1>",
+  });
+
+  res.send("Email sent");
+});
 module.exports = router;
