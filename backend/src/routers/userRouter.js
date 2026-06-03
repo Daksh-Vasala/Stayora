@@ -12,6 +12,7 @@ const {
 } = require("../controllers/userController");
 const authMiddleware = require("../middlewares/authMiddleware");
 const allowedRoles = require("../middlewares/allowedRoles");
+const sendEmail = require("../utils/mailer.js")
 
 const router = require("express").Router();
 
@@ -38,14 +39,17 @@ router.put("/change-password", authMiddleware, changePassword)
 router.put("/update", authMiddleware, updateUserProfile);
 
 router.get("/test-email", async (req, res) => {
-  const sendEmail = require("../utils/resendMail");
+  try {
+    await sendEmail({
+      to: "dakshvasala22@gmail.com",
+      subject: "SendGrid Test",
+      html: "<h1>Test Email</h1>",
+    });
 
-  await sendEmail({
-    to: "daksh.dev.projects@gmail.com",
-    subject: "Test Email",
-    html: "<h1>Resend is working 🚀</h1>",
-  });
-
-  res.send("Email sent");
+    res.send("Email sent");
+  } catch (err) {
+    console.error(err);
+    res.status(500).send(err.message);
+  }
 });
 module.exports = router;

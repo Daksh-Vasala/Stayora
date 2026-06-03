@@ -4,7 +4,7 @@ const bcrypt = require("bcrypt");
 const { sendToken } = require("../utils/jwt.js");
 const crypto = require("crypto");
 const bookingModel = require("../models/bookingModel.js");
-const sendEmail = require("../utils/resendMail.js");
+const sendEmail = require("../utils/mailer.js");
 
 const register = async (req, res) => {
   try {
