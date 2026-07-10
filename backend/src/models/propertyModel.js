@@ -76,4 +76,7 @@ const propertySchema = new Schema(
   { timestamps: true }
 );
 
+propertySchema.index({ status: 1, isDeleted: 1, approvalStatus: 1 });
+propertySchema.index({ host: 1, isDeleted: 1 });
+
 module.exports = mongoose.model("Property", propertySchema);
