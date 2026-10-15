@@ -15,13 +15,13 @@ A multi-role rental platform with separate dashboards for **Guests**, **Hosts**,
 
 ## Tech Stack
 
-| Layer | Tools |
-| --- | --- |
-| Frontend | React.js |
-| Backend | Node.js, Express.js |
-| Database | MongoDB |
-| Auth | JWT |
-| Media | Cloudinary |
+| Layer    | Tools               |
+| -------- | ------------------- |
+| Frontend | React.js            |
+| Backend  | Node.js, Express.js |
+| Database | MongoDB             |
+| Auth     | JWT                 |
+| Media    | Cloudinary          |
 
 ## How It Works
 
@@ -33,11 +33,11 @@ A multi-role rental platform with separate dashboards for **Guests**, **Hosts**,
 
 ## Demo Accounts
 
-| Role | Email | Password |
-| --- | --- | --- |
-| Guest | `<email>` | `<password>` |
-| Host | `<email>` | `<password>` |
-| Admin | `<email>` | `<password>` |
+| Role  | Email                     | Password     |
+| ----- | ------------------------- | ------------ |
+| Guest | `daksh5@gmail.com`        | `Daksh@123`  |
+| Host  | `kushal@gmail.com`        | `Kushal@123` |
+| Admin | `dakshvasala89@gmail.com` | `Admin@123`  |
 
 ## Run Locally
 
@@ -60,17 +60,32 @@ npm run dev
 ```bash
 cd frontend
 npm install
+cp .env.example .env   # then fill in the values
 npm run dev
 ```
 
 ### Environment Variables (backend)
 
 ```
+PORT=
 MONGO_URI=
-JWT_SECRET=
-CLOUDINARY_CLOUD_NAME=
+MAIL_EMAIL=
+MAIL_PASSWORD=
+JWT_KEY=
+CLOUDINARY_KEY_NAME=
 CLOUDINARY_API_KEY=
-CLOUDINARY_API_SECRET=
+CLOUDINARY_SECRET_KEY=
+CLOUDINARY_URL=
+FRONTEND_URL=
+RAZORPAY_API_KEY=
+RAZORPAY_SECRET_KEY=
+SENDGRID_API_KEY=
+```
+
+### Environment Variables (frontend)
+
+```
+VITE_API_RAZORPAY_KEY_ID=
 ```
 
 ## Author
